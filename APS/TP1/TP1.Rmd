@@ -1,0 +1,398 @@
+---
+title: "Real Random Variables"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+  pdf_document:
+    toc: true
+date: "Lab Session 1"
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, fig.width=8, fig.height=4)
+```
+
+-- --
+
+## Objectives
+
+The objectives of this session are to apply definitions related to probability distributions, cumulative distribution function, probability density, expectation calculation, the transfer theorem, and the moment generating function.
+
+
+## Exercise 1. Exponential Distribution
+
+Let $\lambda > 0$. We consider the cumulative distribution function of the exponential distribution $\mathcal E(\lambda)$ defined as follows
+
+
+$$
+F(t) = \left\{
+\begin{array}{ll}
+1 - e^{-\lambda t}  & \text{si } t > 0 \, , \\
+0  & \text{sinon.} \\
+\end{array}
+\right.
+$$
+The exponential distribution models the waiting time for an event occurring randomly with rate $\lambda$.
+
+### Question 1
+
+- Verify that $F$ has the properties of a cumulative distribution function of a continuous law. Calculate the probability density function associated with this distribution.
+
+**Solution.** The solution can be written on a separate sheet of paper.
+
+- Perform $n = 1000$ independent draws from the exponential distribution with parameter $\lambda = 3$. Plot a histogram for the corresponding sample. Overlay the probability density curve of the exponential distribution with parameter $\lambda = 3$ on this histogram.
+
+**Solution.** Complete the following code
+
+
+```{r}
+ # Sample size
+n = 1000
+
+# Simulation: help(rexp)
+#x = rexp(something_here)
+
+# Histogram: help(hist)
+#hist(x, col = "white", nclass = 20, las = 1, prob = TRUE)
+#curve(dexp(something_else_here), 0, 2, col = "green4", add = TRUE)
+```
+
+
+### Question 2
+
+Let $X$ be a random variable with an exponential distribution $\mathcal E(\lambda)$. Calculate the median of $X$, that is, the number $m$ such that $\text{P}(X \leq m) = \frac12$.
+
+Verify the result using the sample simulated in the previous question.
+
+**Solution.** The solution can be written on a separate sheet of paper. Verification can be done using the `median` function. Use `+c` to create a small code snippet.
+
+
+ 
+### Question 3
+
+Let $U$ be a random variable with a uniform distribution on (0,1). Show that 
+$X = F^{-1}(U) = -\ln(1-U)/\lambda$ follows an exponential distribution with parameter $\lambda$. Conversely, let $X$ be a random variable with an exponential distribution with parameter $\lambda$. Show that $U = F(X)$ follows a uniform distribution on (0,1).
+
+**Solution.** The solution can be written on a separate sheet of paper. 
+
+### Question 4
+
+- Deduce from the previous question a method to simulate an exponential distribution with parameter $\lambda = 1$ from a uniform random variable (simulated using `runif`).
+
+**Solution.** The solution can be written on a separate sheet of paper. 
+
+
+- For a uniform sample of size $n = 1000$, verify that the method seems correct using a graphical test.
+
+**Solution.** Complete the code and their comments below.
+
+
+```{r}
+ n = 1000
+# Generate 1000 uniform draws
+#u = runif(n)
+
+# Cumulative distribution function of Exp(1)
+cdf <- function(x){
+  # formula CDF of Exp(1)
+}
+
+
+# Transformation
+#y =  transformation
+
+# Empirical cumulative distribution function
+#ecdf <- function(x){
+# mean(y <= x)
+#}
+
+# regular grid
+#x=seq(from =0, to =40, by= 0.5)
+
+# Plot check
+#plot(x, cdf(x), type = "l", col = "blue", lty = 1,
+ #    xlab = "x", ylab = "y", main = "Empirical vs Theoretical CDF")
+#par(new=T)
+#plot(x, sapply(x,ecdf), type="l", lty = 2, col = "red") 
+#legend(x="topright",col=c("blue","red"),lty=c(1,2), legend=c("theoretical CDF","empirical CDF"))
+```
+
+## Exercice 2
+
+Let us consider the following random variable
+$$
+X = 1_{(U\leq 1/3)} V + 1_{(U>2/3)} (1+V),
+$$ 
+For $U, V$, two independent random variables with uniform distribution $\mathcal{U}(0,1)$.
+
+### Question 1
+
+Determine the cumulative distribution function of $X$.
+
+**Solution.** The solution can be written on a separate sheet of paper. Only the result will be reported. 
+
+### Question 2
+
+Plot graphically the cumulative distribution function obtained in Question 1. Does the distribution of the variable $X$ have a probability density function?
+
+**Solution.** You can use the `curve` function or the `plot` function.
+
+### Question 3
+
+We study the following algorithm:
+
+- Draw $N$ from $E=\{1,2,3\}$ uniformly at random,
+- Draw $U$ from a uniform distribution $\mathcal U(0,1)$,
+- Return $Y = 1_{(N=3)} + 1_{(N \neq 1)} U$.
+
+In R, the algorithm is implemented (vectorized) as
+
+
+```{r}
+n <- 1000
+N <- sample(1:3, n, replace = TRUE)
+y <- (N == 3) + (N != 1)*runif(n)
+```
+
+Calculate the cumulative distribution function of the random variable $Y$ obtained from this algorithm.
+
+**Solution.** The solution can be written on a separate sheet of paper (use the law of total probability).
+
+
+
+
+### Question 4
+
+Verify the algorithm empirically by comparing the theoretical and empirical cumulative distribution functions.
+
+**Solution.** Comment on the following code
+
+
+```{r}
+# comment 1
+FX <- function(x){
+  return((1/3+x/3)*(0 <= x & x < 2) + (x >= 2)) }
+
+# comment 2
+plot(ecdf(y), do.points=TRUE, 
+     main = "Fonction de répartition", 
+     ylab = expression(F(x)), ylim = c(0,1))
+
+# comment 3
+curve(FX(x), add=TRUE, col="blue", n = 201, lwd=1.5)
+legend("bottomright", lty=1, 
+       col=c("black", "blue"), 
+       c("empirique", "théorique"), lwd=1.5)
+```
+
+### Question 5
+
+Verify empirically the validity of the algorithm by creating a probability plot: theoretical cumulative distribution function values versus empirical cumulative distribution function values.
+
+**Solution.** Complete the following code. `ecdf` computes the empirical cumulative distribution function of a sample; note that it returns a function.
+
+
+```{r}
+#plot(fonction_repartition_empirique(y), 
+    # fonction_repartition_theorique(y), 
+     #main="Graphe de probabilité", 
+     #xlab="proba. empirique", 
+     #ylab="proba. théorique")
+
+#abline(0, 1, col="grey")
+```
+
+
+
+# Expectation, transfer formula, variance, sum of random variables
+
+## Exercise 3. Exponential Distribution
+
+### Question 1
+
+Let $X$ be a random variable with an exponential distribution with parameter $\lambda > 0$. Calculate the expectation of the random variable $X$. 
+
+**Solution.** The solution can be written on a separate sheet of paper. Only the result will be given. 
+
+
+### Question 2
+
+Calculate the variance of the random variable $X$.
+
+**Solution.** The solution can be written on a separate sheet of paper. Only the result will be given.
+
+
+
+
+### Question 3
+
+Suppose the exponential distribution represents the waiting time for an event with rate $\lambda = 1/10$, i.e., one event every 10 seconds. Verify empirically the results obtained for the expectation and variance using a numerical simulation. 
+
+**Solution.** Perform 10,000 random draws. Complete and comment on the following code
+
+```{r}
+n <- 10000
+lambda <- .1
+
+# comment 1
+#x <- rexp(n, lambda)
+
+# comment 2
+#c(mean(x), a_completer)
+
+# comment 3
+#c(var(x), a_completer)
+```
+
+
+### Question 4
+
+Suppose $X$ and $Y$ are two independent random variables with exponential distribution with parameter $\lambda = 1/10$. Determine the probability density function of the variable $Z = X + Y$. Verify the result empirically using a numerical simulation.
+
+**Solution.** Perform 10,000 random draws. Complete and comment on the following code
+
+
+
+```{r}
+n <- 10000
+
+# comment 1
+lambda <- .1
+x <- rexp(n, lambda)
+y <- rexp(n, lambda)
+z <- x + y
+
+# comment 2
+hist(z, prob = TRUE, col = "lightblue", ylim = c(0, 0.04))
+
+# comment 3 : la densité de z est celle d'une loi gamma
+curve(dgamma(x, trouve_shape, trouve_rate), 
+      add=TRUE, 
+      col="blue", lwd=2)
+
+legend("topright", lty=1, col=c("black", "blue"),
+       lwd=2, c("empirique", "théorique"))
+```
+
+
+### Question 5
+
+Calculate the moment generating function of the exponential distribution with parameter $\lambda$.  
+Recover the previous results regarding the expectation and variance using this function. 
+
+**Solution.** The solution can be written on a separate sheet of paper. Only the result will be given.
+
+### Question 6
+
+Let $X_1, \dots, X_n$ be independent random variables with exponential distribution $\mathcal E(\lambda)$.  
+Calculate the moment generating function of the random variable $S_n = X_1 + \dots + X_n$. Show that the distribution of $S_n$ is the Gamma$(n, \lambda)$ distribution with density
+
+
+$$
+f_{S_n}(s) = \frac{\lambda^n}{(n-1)!} s^{n-1} e^{-\lambda s} \,  1_{\mathbb{R}_+} (s) \, \quad s \in \mathbb{R}.
+$$
+
+
+**Solution.** The solution can be written on a separate sheet of paper. 
+
+
+### Question 7
+
+Deduce from the previous question the distribution of the random variable $\overline X_n = S_n / n$. Recover a known distribution.
+
+**Solution.** The solution can be written on a separate sheet of paper. Only the result will be given.
+
+
+### Question 8
+
+Plot graphically the densities of the distributions of the variables $\overline X_5$, $\overline X_{10}$, $\dots$, $\overline X_{25}$. 
+
+**Solution.** Comment on the following code. What do you observe?
+
+
+
+```{r}
+lwd <- 2
+lambda <- 0.1
+
+# comment
+curve(dgamma(x, 5, 5*lambda), from=0, to= 3/lambda, ylim=c(0,2*lambda), lwd=lwd, ylab=expression(f[X](x)), lty = 2, col = "grey20")
+
+# comment
+for(i in 2:5)
+  curve(dgamma(x, 5*i, 5*i*lambda), lty=i, col=i, add=TRUE, lwd=lwd)
+
+# comment
+abline(v=1/lambda, col=6, lwd=lwd)
+legend("topright", lty=c(1:5, 1), col=1:6, c(paste("Gamma (", 1:5, ",", 5*(1:5), "lambda)"), "1/lambda"), lwd=lwd)
+```
+
+
+
+
+## Exercise 4. Normal Distribution
+
+### Question 1
+
+Calculate the moment generating function of the $\mathcal N(0,1)$ distribution. Recall that the density of this distribution is given by the Gaussian curve
+
+
+$$
+f(x) = \frac{1}{\sqrt{2\pi}} e^{-x^2/2} \, , \quad x \in \mathbb{R}
+$$
+Hint: Use the algebraic identity $x^2 - 2xt = (x-t)^2 - t^2$. 
+
+**Solution.** The solution can be written on a separate sheet of paper. Only the result will be given.
+
+
+### Question 2
+
+Deduce from the previous question the first four moments of the $\mathcal N(0,1)$ distribution. 
+
+**Solution.** The solution can be written on a separate sheet of paper. Only the result will be given.
+
+### Question 3
+
+Let $m \in \mathbb{R}$, $\sigma^2 \in \mathbb{R}_+$, and $Z$ a random variable with distribution $\mathcal N(0,1)$. The distribution $\mathcal N(m,\sigma^2)$ is defined as the distribution of the random variable $X = m + \sigma Z$ for $\sigma>0$. Calculate the moment generating function of the $\mathcal N(m,\sigma^2)$ distribution, then determine its density. 
+
+**Solution.** The solution can be written on a separate sheet of paper. Only the result will be given.
+
+
+### Question 4
+
+Let $X$ and $Y$ be two independent random variables with normal distributions $\mathcal N(m_X, \sigma^2_X)$ and $\mathcal N(m_Y, \sigma^2_Y)$ respectively, and let $a_1, a_2$ be scalars. Show that $a_1 X + a_2 Y$ is a normal random variable with mean $a_1 m_X + a_2 m_Y$ and variance $a_1^2 \sigma^2_X + a_2^2 \sigma^2_Y$.
+
+**Solution.** The solution can be written on a separate sheet of paper.
+
+### Question 5
+
+Let $X$ and $Y$ be two independent random variables with normal distributions $\mathcal N(-2, 1)$ and $\mathcal N(1, 4)$ respectively. Determine the distribution of the variable $X + 2Y$. Verify the result empirically using a numerical experiment with 10,000 draws from the standard normal distribution (`rnorm`).
+
+**Solution.** The solution can be written on a separate sheet of paper. Complete and comment on the following code
+
+
+
+```{r}
+n <- 10000
+
+# comment 1
+x <- rnorm(n, -2, 1)
+y <- rnorm(n, 1, 2)
+z <- x + 2*y
+
+# comment 2
+hist(z, prob = TRUE, col = "pink", 
+     ylim = c(0, .11), 
+     xlim = c(-10, 10))
+
+# comment 3: the density of $Z$ is that of a normal distribution.
+curve(dnorm(x, find_the_mean, and_standard_type), 
+      add=TRUE, col="blue", lwd=2)
+
+legend("topright", lty=1, 
+       col=c("black", "blue"), 
+       lwd=2, c("empirique", "théorique"))
+```
+
