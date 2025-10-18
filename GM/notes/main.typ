@@ -1,4 +1,6 @@
 #import "lib.typ": *
+#import "@preview/fletcher:0.5.8" as fletcher: diagram, node, edge
+#import "@preview/diverential:0.2.0" : *
 
 #show: template.with(
   title: [Geometric Modeling],
@@ -174,7 +176,7 @@ We need to show uniqueness of the minimizer
 If $integral f''² = integral S''²$ then $integral e''²=0$
 
 
-= Differential geometry
+= Differential geometry of curves
 
 == Representation of curves
 
@@ -490,7 +492,7 @@ $ tau(s) = -angle.l B'(s), N(s) angle.r = plus.minus norm(B'(s)) $
 ]
 
 #proof[
-  $ tau(s) & =  - angle.l N(s), B'(s) angle.r  \ & =   $
+  $ tau(s) & =  - angle.l N(s), B'(s) angle.r  \ & =  T O D O  $
  
   Thus $tau(s) = det (T(s), N(s), N'(s))$. However, $ & dot T(s) = gamma'(s) \ & dot N(s) = R(s) gamma''(s) \ & dot N'(s) = R'(s)gamma''(s) + R(s)gamma'''(s)  $
 
@@ -525,3 +527,119 @@ Let $gamma$ be a $cal(C)^3$ biregular space curve. We have :
 
   
 ]
+
+#proposition("Serret-Fresnet formula")[
+  Let $gamma$ be a arc-length $cal(C^3)$ parametrized space curve. We have
+  - $T'(s) = kappa(s)N(s)$
+  - $B'(s) = - tau(s)N(s)$
+  - $N'(s) = -kappa(s)T(s) + tau(s)B(s)$.
+
+]
+
+#proof[
+ First two points were already proven earlier.
+  - $(norm(N(s))) = 1 => N' perp N$. Since $(T(s),B(s))$ is thus a direct basis, we have $N'(s) = lambda(s)T(s) + mu(s)B(s)$. We have
+
+    $  lambda(s) = angle.l N'(s), T(s) angle.r
+               = - angle.l N(s), T'(s) angle.r
+               = - angle.l N(s), kappa(s)N(s) angle.r
+               = - kappa(s).
+    $
+   And 
+  $ mu(s) = angle.l N'(s), B(s) angle.r = - angle.l N(s), B'(s) angle.r = - angle.l N(s), -tau(s)N(s) = tau(s). $ 
+]
+
+#theorem("Fundamental theorem of local theory of curves
+")[
+
+  Let $kappa : [a,b] mapsto RR $ and $tau : [a,b] mapsto RR$ be $cal(C)^1$ functions, and such that $kappa$ is always strictly positive.
+
+  Then, there exists a unique (up to a rigid motion) $cal(C)^3$ arc-length parametrized curve $gamma : [a,b] mapsto RR^3$ whose curvature is $kappa$ and torsion $tau$. ]
+
+#proof[
+  Admitted. Relies on Cauchy-Lipschitz.
+]
+
+
+= Differential geometry of surfaces
+
+Representations of surfaces include : 
+- Parametrization : $f : U subset RR^2 mapsto RR^3$
+ - Special case : the graph of a map $phi : RR^2 mapsto RR$ is $f(x,y,z) = (x,y, phi(x,y))$.
+- Implicit : An inverse image of a map $g : RR^3 mapsto RR$. 
+  - Example : Let $g(x,y,z) = x^2 + y^2 + z^2 - R^2$. Then $g^(-1)({0})  "is the sphere of center" 0_(RR^3) "and radius" R.$
+- Drawings !
+
+These representations are locally equivalent when surfaces are "regular" (existence of tangent spaces).
+
+In the following section, $U$ and $V$ are taken to be open sets of $RR^2$. 
+
+== Generalities
+
+#definition("Parametrized surface")[
+  A $cal(C)^k$ parametrized surface is a $cal(C^k)$ map $f: U subset RR^2 mapsto RR^3$.
+]
+
+
+We are interested in the geometric surface $ S = f(U)$. However, one such geometric surface can admit many different parametrizations. They are all the same up to a diffeomorphism. More precisely, with $phi$ a $C^(k)$ diffeomorphism, we have: 
+
+
+#align(center)[#diagram(cell-size: 15mm, $
+	U subset RR^2 edge(f, ->) edge("d", phi, ->) & S \
+	V subset RR^2 edge("ur", g, "->")
+$)]
+
+#definition("Admissible change of variable ")[
+
+  We say $phi : U mapsto V$ is an admissible change of variable for a $cal(C^(k))$ parametrized surface if $phi$ is a $cal(C^k)$ diffeomorphism. The induced reparametrization is $g  = f compose phi^(-1).$ Indeed, $ g(V) = f(phi^(-1)(V)) = f(U). $
+]
+
+We are interested in *geometric* properties of curves, thus that do not depend on reparametrization by an admissible change of variable.
+
+== Tangent spaces
+
+
+#definition("Curve on surface")[
+Let $f : U mapsto RR^3$ be a $cal(C^1)$ surface and $gamma : I subset RR mapsto U$ a $cal(C^1)$ curve. 
+  Then, $f compose gamma $ is a curve on $S = f(U)$.
+]
+
+*Examples*:
+Let $I_1,I_2 subset RR$ such that $I_1 times I_2 subset U$. For any point $(u_0,v_0) in I_1 times I_2$, we define the *coordinate curves* on $S$ as $gamma_(u_0) : I_1 mapsto S$ and $gamma_(v_0) : I_2 mapsto S$ :
+$ gamma_(u_0) : v mapsto  gamma(u_0, v) quad "and" quad gamma_(v_0) : u mapsto gamma(u, v_0). $
+
+
+
+Remark that $gamma'_(u_0)(v_0) = dvp(f,v)(u_0, v_0) $ and $gamma'_(v_0)(u_0) = dvp(f,u)(u_0,v_0)$.
+
+
+#definition("Tangent space")[
+
+The tangent space to $S = f(U)$ as $m_0 = f(u_0,v_0)$ is the affine space passing through $m_0$ and spanned by $(dvp(f,u)(u_0,v_0), dvp(f,v)(u_0,v_0))$. We denote it $T_(m_0) S.$
+]
+*Remark* : We will often abusively refer to $T_(m_0)S$ as a vector space, omitting the translation from $0$ to $m_0$.
+
+
+#proposition[$T_(m_0)S $ is (as a vector space) the set of derivatives of parametrized curves on $S$ at $0$ where $C(0) = m_0$.]
+
+#proof[
+
+  Let $C = f compose gamma$ be a curve on $S$.
+  Then $C'(t) = D_f (gamma(t)) dot gamma'(t).$ We set $gamma(0) = (u_0,v_0)$ and $gamma'(0) = (lambda, mu)$.
+  Then, $ C'(0) = D_f (u_0,v_0) dot (lambda, mu) = dvp(f,u)(u_0,v_0) lambda + dvp(f,v)(u_0,v_0)mu in T_(m_0)S. $
+
+  For the reciprocal inclusion, let $X in T_(m_0)S.$ We know
+
+  $ exists (lambda, mu) in RR², space X = dvp(f,u)(u_0,v_0) lambda + dvp(f,v)(u_0,v_0)mu. $
+
+  We thus pick a curve $gamma : I subset R mapsto U$ such that $gamma(0) = (u_0,v_0)$ and $gamma'(0) = (lambda , mu).$ We denote $C = f compose gamma$.
+
+  Then $X = D_f (u_0,v_0) dot (lambda, mu) = C'(0).$
+
+  
+]
+*Remarks* :
+- We can express the tangent space (as a vector space) as  $T_(m_0)S = op("Im")(D_f (u_0, v_0))$. 
+- A parametrized surface $f$ is regular at $m_0$ if $op("Rank")(D_f (u_0, v_0)) = 2$, i.e the tangent space is a *plane*.
+- A parametrized surface $f$ is said to be regular if it is regular at every point.
+- A geometric surface $S$ is said to be regular if there exists a regular paramerization of $S$.
