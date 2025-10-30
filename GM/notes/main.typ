@@ -420,7 +420,6 @@ If $gamma$, $cal(C)^2$ regular, is parametrized by arc-length, the curvature $ka
   For any regular parametrization of $gamma$, we have
   $ kappa(t) = norm( gamma'(t) and gamma''(t))/norm(gamma'(t))^3.  $
 ]
-
 #proof[
   We denote $tgm = gamma compose phi^(-1)$ the arc-length parametrization of $gamma$, with $t = phi^(-1)(s)$.
   We have $ angle.l tgm'(s), tgm'(s) angle.r = 1 ==> 2 angle.l tgm''(s), tgm'(s) angle.r = 0 & \ ==> tgm''(s) perp tgm'(s) quad "and" quad norm(tgm'(s) = 1) & \ ==> kappa(s) = norm(tgm''(s)) = norm(tgm'''(s) and tgm'(s)).  $
@@ -643,3 +642,170 @@ The tangent space to $S = f(U)$ as $m_0 = f(u_0,v_0)$ is the affine space passin
 - A parametrized surface $f$ is regular at $m_0$ if $op("Rank")(D_f (u_0, v_0)) = 2$, i.e the tangent space is a *plane*.
 - A parametrized surface $f$ is said to be regular if it is regular at every point.
 - A geometric surface $S$ is said to be regular if there exists a regular paramerization of $S$.
+
+#proposition("Invariance of regularity of surfaces by reparametrization")[
+  Let $f : U mapsto RR^3$ be a $cal(C)^(1)$ regular parametrized surface and $g : V mapsto RR^3$ a reparametrization of $f$. 
+
+  Then, $g$ is regular and the tangent spaces coincide.
+]
+
+#proof[
+
+#align(center)[#diagram(cell-size: 15mm, $
+	U subset RR^2 edge(f, ->) edge("d", phi, ->) & S subset RR^3 \
+	V subset RR^2 edge("ur", g, "->")
+$)]
+
+We have $f = g compose phi $. Thus, $ D_f (u_0,v_0) = D_g ( phi(u_0,v_0)) compose D_(phi) (u_0,v_0) quad "where" quad D_phi (u_0,v_0) : RR^2 mapsto RR^2 "is an isomorphism." $
+  Hence, $ op("Im")(D_f (u_0,v_0)) = op("Im")(D_g (u_0,v_0)). $
+
+  It trivially follows that $g$ is regular if and only if $f$ is.
+
+]
+
+== Metric properties
+
+=== First fundamental form
+
+#definition("First fundamental form")[
+  Let $f : U subset RR^2 mapsto RR^3$ be a $cal(C)^1$-regular surface.
+  The first fundamental form is given by :
+
+  $ i_(m_0) : & T_(m_0)S times T_(m_0)S mapsto RR \ &
+  (x,y) --> angle.l x, y angle.r $
+  
+]
+*Remark*: - Since $f$ is regular, the first fundamental form is canonically identified to a $2D$ dot product on $T_(m_0)S$ via change of basis. This justifies focusing on the expression of the first fundamental form in this basis.
+- The first fundamental form is a dot product, i.e a positive definite symmetric bilinear form. Our notations will thus be based on the matrix expression of bilinear form
+
+#proposition("Matrix of the first fundamental form in the tangent space basis")[
+  We can express the first fundamental form in the basis $(dvp(f,u)(u_0,v_0), dvp(f,v)(u_0,v_0)) = (U,V) $ of $T_(m_0)S$ by the following matrix:
+  $ I_(m_0) = mat( E_(m_0), F_(m_0) ;
+    F_(m_0), G_(m_0) ) $
+  #linebreak() Where $E_(m_0) = angle.l U, U angle.r$, $F_(m_0) = angle.l U, V angle.r $ and $G_(m_0) = angle.l V, V angle.r .$
+]
+#proof[
+Let $X = vec(x_u, x_v)$ and $Y = vec(y_u, y_v)$ be two tangent vectors expressed in the given basis. We have
+  $ i_(m_0) (X,Y) & = angle.l x_u U + x_v V, y_u U + y_v V angle.r \ & 
+  = x_u y_u angle.l U, U angle.r + (x_u y_v + x_v y_u) angle.l U, V angle.r + x_v y_v angle.l V, V angle.r \ &
+  = X^T I_(m_0) Y. $
+
+  
+]
+
+
+*Remark* : 
+- From a differential geometry point of view, $I_(m_0)$ as a matrix amounts to a pull back of the dot product on the parameter space.
+- We usually like to represent bilinear forms in orthornormal bases, beware that it is not the case in general for the tangent space basis.
+
+
+#proposition("Local area multiplicative factor expressed by the fundamental form")[
+  We have $ norm( dvp(f,u)(u_0,v_0) and dvp(f,v)(u_0,v_0)) = sqrt(det(I_(m_0))) = sqrt(E_(m_0)G_(m_0) - F_(m_0)^2). $
+] <propdet> 
+
+#proof[
+Let $u, v in RR^3$. We have $ norm(u and v)^2 = norm(u)²norm(v)^2 sin (u,v)^2 quad "and" quad bar angle.l u, v angle.r bar^2 = norm(u)^2 norm(v)^2 cos(u,v). $   
+  Thus, $norm(u and v )^2 = norm(u)^2 norm(v)^2 - angle.l u, v angle.r ^2.$
+ 
+  Conclusion trivially follows using $(u,v) = (dvp(f,u)(u_0,v_0), dvp(f,v)(u_0,v_0)).$
+]
+
+
+*Remark* : Since $I_(m_0)$ is a positive bilinear form, $det(I_(m_0)) > 0.$
+
+
+=== Length of a curve on a surface
+
+#proposition("Length of a curve on a surface")[Let $gamma : [a,b] mapsto U$ defined by $gamma(t) = vec(u(t), v(t))$ and $f : U mapsto RR^3$. Denote $C_gamma = f compose gamma$ and $l(C_gamma)$ the length of $C$. We have 
+
+$ l(C_gamma) = integral_(a)^(b) sqrt(I_((f compose gamma)(t)) (gamma'(t), gamma''(t))) d t $]
+
+
+#proof[ We have $ l(C_gamma) = l( f compose phi)  
+= integral_(a)^(b) norm( (f compose gamma)'(t)) d t  . $
+
+Also, 
+$ norm((f compose gamma)'(t))^2 & = norm(D_f (gamma(t)) compose D_gamma (t)))^2 \ & 
+= norm( dvp(f,u)(u(t), v(t)) dot u'(t) + dvp(f,v)(u(t), v(t) dot v'(t)  ) )^2 \ & 
+= u'(t)^2 underbrace(norm(dvp(f,u)(u(t),v(t)))^2, E) + 2 dot u'(t)v'(t) angle.l underbrace(dvp(f,u)(u(t), v(t)), F) angle.r  + v'(t)^2 underbrace(norm( dvp(f,v)(u(t), v(t)))^2, G) \ &
+= I_(gamma(t))(gamma'(t), gamma''(t)). $
+
+This yields the wanted formula.
+]
+
+
+#proposition("Area of a surface")[
+
+Let $f : U mapsto RR$ be a $cal(C)^1$ regular surface. The area of the surface $S$ is the following (independent of parametrization) quantity :
+
+  $ A(S) = integral_(U)^() sqrt( det (I_f (u,v))) d u d v.  $
+]
+#proof[ Admitted, although it is just an application of @propdet to the integral definition of the area of a surface. See #link("https://fr.wikipedia.org/wiki/Int%C3%A9grale_de_surface", "here") for details..]
+
+
+
+== Curvature
+
+=== Differentiable map between surfaces
+
+We want to give a meaning to the differential of a map $phi$ between surfaces. More precisely, consider the following diagram :
+
+
+#align(center)[#diagram(cell-size: 15mm, $
+	S_1 subset RR^3 edge(phi, ->) edge("d",f, <-) & S_2 subset RR^3 \
+      U subset RR^2 & V subset RR^2 edge("u", g, ->)
+$)]
+
+Our goal is to build a linear map that locally represents $phi$.
+
+#definition("Differentiable map between surfaces")[
+  We say that $ phi : S_1 mapsto S_2$ is differentibale if $f compose phi compose phi^(-1)$ is differentiable. 
+
+  It's differential $D_phi (m_0) :  T_(m_0)S_1 mapsto T_(m_1)S_2$ is then defined for every $X in T_(m_0)S_1$ as
+  
+$ D_phi (m_0) := D( phi compose f)(u_0,v_0)(h,k) in T_(m_0)S_2 "where" (h,k) in RR^2 "is a vector s.t" X = D_f (u_0,v_0) dot (h,k). $
+]
+
+=== Gauss map and second fundamental form
+
+Let $f: U mapsto RR$ be a $cal(C)^2$ regular surface and $m_0 = f(u_0, v_0) in S.$ The vector 
+$ N(u_0,v_0) = (dvp(f,u)(u_0,v_0) and dvp(f, v) (u_,v_0))/ norm(dvp(f,u)(u_0,v_0) and dvp(f, v) (u_,v_0)) $
+is a unit vector orthogonal to $T_(m_0)S.$
+
+#proposition[The line $op("Span")(N_f(u_0,v_0))$ does not depend on the parametrization of $S = f(U)$.]
+
+#proof[
+  Let $g : V mapsto RR^3 $ be a reparametrization of $S$, $f = g compose phi$.
+  A few lines of algebra yield:
+
+  $ N_f (u_0,v_0) = N_g (phi(u_0,v_0)) dot (det(D_phi (u_0,v_0)))/abs(det(D_phi (u_0,v_0))). $
+
+  Thus $N_f(u_0,v_0)$ is defined up to the sign, hence the span is invariant. Note that this sign is constant since $phi$ is a diffeomorphism.
+]
+
+#definition("Orientable surface")[
+  We say that a surface $S$ is orientable if there exists a continuous unit normal vector on $S$.
+]
+*Remark*:
+- Orientability is a global notion.
+- An orientable surface thus has a defined inside and outside based on this normal vector.
+- The Moebius strip is non orientable.
+
+#definition("Gauss map")[
+  Let $S$ be a $cal(C)^2$-regular orientable surface of $RR^3$ and $SS^2$ the unit sphere of $RR^3$. We define the continuous map :
+
+  $ K & : S --> SS^2 \ &
+  m_0 --> K(m_0) $
+
+Where $K(m_0)$ is the unit normal vector to $f$ in $m_0$. $K$ is called the Gauss map.
+  
+]
+
+#proposition()[The map
+$D_K (m_0) : T_(m_0)S --> T_(K(m_0)) SS^2$ is an endomorphism.]
+
+*Remark* : As done previously, we identify the tangent spaces to vector spaces here.
+
+#proof[
+
+]
