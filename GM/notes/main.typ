@@ -669,13 +669,14 @@ We have $f = g compose phi $. Thus, $ D_f (u_0,v_0) = D_g ( phi(u_0,v_0)) compos
 
 #definition("First fundamental form")[
   Let $f : U subset RR^2 mapsto RR^3$ be a $cal(C)^1$-regular surface.
-  The first fundamental form is given by :
+  The first fundamental form is defined by :
 
   $ i_(m_0) : & T_(m_0)S times T_(m_0)S mapsto RR \ &
   (x,y) --> angle.l x, y angle.r $
   
 ]
-*Remark*: - Since $f$ is regular, the first fundamental form is canonically identified to a $2D$ dot product on $T_(m_0)S$ via change of basis. This justifies focusing on the expression of the first fundamental form in this basis.
+*Remark*: 
+- Since $f$ is regular, the first fundamental form is canonically identified to a $2D$ dot product on $T_(m_0)S$ via change of basis. This justifies focusing on the expression of the first fundamental form in this basis.
 - The first fundamental form is a dot product, i.e a positive definite symmetric bilinear form. Our notations will thus be based on the matrix expression of bilinear form
 
 #proposition("Matrix of the first fundamental form in the tangent space basis")[
@@ -683,7 +684,7 @@ We have $f = g compose phi $. Thus, $ D_f (u_0,v_0) = D_g ( phi(u_0,v_0)) compos
   $ I_(m_0) = mat( E_(m_0), F_(m_0) ;
     F_(m_0), G_(m_0) ) $
   #linebreak() Where $E_(m_0) = angle.l U, U angle.r$, $F_(m_0) = angle.l U, V angle.r $ and $G_(m_0) = angle.l V, V angle.r .$
-]
+] <propmatfirst>
 #proof[
 Let $X = vec(x_u, x_v)$ and $Y = vec(y_u, y_v)$ be two tangent vectors expressed in the given basis. We have
   $ i_(m_0) (X,Y) & = angle.l x_u U + x_v V, y_u U + y_v V angle.r \ & 
@@ -761,11 +762,11 @@ Our goal is to build a linear map that locally represents $phi$.
 #definition("Differentiable map between surfaces")[
   We say that $ phi : S_1 mapsto S_2$ is differentibale if $f compose phi compose phi^(-1)$ is differentiable. 
 
-  It's differential $D_phi (m_0) :  T_(m_0)S_1 mapsto T_(m_1)S_2$ is then defined for every $X in T_(m_0)S_1$ as
+  It's differential $d phi (m_0) :  T_(m_0)S_1 mapsto T_(m_1)S_2$ is then defined for every $X in T_(m_0)S_1$ as
   
-$ D_phi (m_0) := D( phi compose f)(u_0,v_0)(h,k) in T_(m_0)S_2 "where" (h,k) in RR^2 "is a vector s.t" X = D_f (u_0,v_0) dot (h,k). $
+$ d phi (m_0) := d( phi compose f)(u_0,v_0)(h,k) in T_(m_0)S_2 "where" (h,k) in RR^2 "is a vector s.t" X = d f (u_0,v_0) dot (h,k). $
 ]
-
+*Remark:* We denote $D phi (m_0)$ the matrix of the differential in the basis $(dvp(f,u)(u_0,v_0), dvp(f,v)(u_0,v_0)) = cal(B).$
 === Gauss map and second fundamental form
 
 Let $f: U mapsto RR$ be a $cal(C)^2$ regular surface and $m_0 = f(u_0, v_0) in S.$ The vector 
@@ -791,6 +792,7 @@ is a unit vector orthogonal to $T_(m_0)S.$
 - An orientable surface thus has a defined inside and outside based on this normal vector.
 - The Moebius strip is non orientable.
 
+#let Kt = $tilde(K)$
 #definition("Gauss map")[
   Let $S$ be a $cal(C)^2$-regular orientable surface of $RR^3$ and $SS^2$ the unit sphere of $RR^3$. We define the continuous map :
 
@@ -800,12 +802,70 @@ is a unit vector orthogonal to $T_(m_0)S.$
 Where $K(m_0)$ is the unit normal vector to $f$ in $m_0$. $K$ is called the Gauss map.
   
 ]
+*Remark* : We denote $Kt = K compose f$ the Gauss map with respect to $U$.
+#proposition("Differential of the Gauss map")[The map
+$d K(m_0) : T_(m_0)S --> T_(K(m_0)) SS^2$ is a self-adjoint endomorphism.]
 
-#proposition()[The map
-$D_K (m_0) : T_(m_0)S --> T_(K(m_0)) SS^2$ is an endomorphism.]
+#proof[
+As done previously, we identify the tangent spaces to vector spaces.
+- $d K (m_0)$ is obviously linear.  TODO : endo proof
+- TODO (photos)
+]
 
-*Remark* : As done previously, we identify the tangent spaces to vector spaces here.
+
+This is an important property of the gauss map. Indeed, by the spectral theorem, $d K(m_0)$ is orthornomally diagonalizable  and the eigenvalues $lambda_1 < lambda_2$ satisfy $ lambda_1 = min_(x in (RR^2)^(*)) angle.l D K (m_0)x , x angle.r  "and" lambda_2 = max_(x in (RR^2)^(*)) angle.l D K (m_0)x , x angle.r.  $ 
+
+This leads to the following definitions:
+
+#definition("Principal curvatures")[
+  - The eigenvectors of $d K(m_0)$ are called the principal directions od $S$ at $m_0$, and the eigenvalues the principal curvatures
+  - The quantiy $G(m_0) = det(d K(m_0)) = lambda_1 lambda_2$ is called the Gauss curvature.
+  - The quantiy $H(m_0) = (op("Tr")(d K (m_0)))/2 = (lambda_1 + lambda_2)/2$ is called the mean curvature.
+  - The operator $a_(m_0) = - d K (m_0)$ is called the Weingarten endomorphism.
+
+]
+
+We now define the second fundamental form of a surface and link it to the Weingarten endomorphism for computation purposes.
+
+#let ii = $I I$
+#definition("Second fundamental form")[
+Let $f : U subset RR^2 mapsto RR^3$ be a $cal(C)^2$-regular surface and $m_0 = f(u,v)$ where $(u,v) in U$. 
+
+The second fundamental form is defined by :
+
+  $ i i_m &: T_m S times T_m S --> RR  \ & (X,Y) --> angle.l - D K (m)X, Y angle.r $
+]
+*Remark* : $i i _m (X,Y) = i_m (- d K (m)X, Y).$
+
+
+#let d2(f,u) = $dvp(f,u,deg: 2)$
+#proposition("Matrix expression of the second fundamental form")[
+  We denote $Kt = K compose f$ the Gauss map expressed in terms of parameters in $U$. We can express the first fundamental form in $ cal(B)$ of $T_(m_0)S$ by the following matrix:
+
+  $ ii_(m_0) = mat( L_(m_0), M_(m_0); M_(m_0), N_(m_0)) $
+
+  where $ L_(m_0) & = angle.l d2(f,u), Kt(u,v) angle.r \ M_(m_0) & = angle.l dvp(f,u,v) (u,v), Kt(u,v) angle.r \ N_(m_0) &= angle.l dvp(f,v,deg:2), Kt(u,v) angle.r . $
+]
+
+#proof[
+Computations analog to proof of @propmatfirst .
+]
+
+#proposition("Matrix expression of the Weingarten endomorphism ")[
+  The matrix of $a_(m_0) = - d K (m_0)$ in $cal(B) $ is $ A_(m_0) = I_(m_0)^(-1)ii_(m_0). $
+]
 
 #proof[
 
+  We know $i i _(m_0) (X,Y) = i_m (- d K (m_0)X, Y) = i_m (a_m (X),Y)$. In $cal(B)$, this is be written as
+
+  $ X^T ii_(m_0)Y = (A_(m_0)X)^T I_(m_0) Y = X^T A_(m_0)^T I_(m_0) Y ==> ii_(m_0) = A^T_(m_0)I_(m_0). $
+
+  Since $i i _(m_0)$ and $i_(m_0)$ are symmetric, we thus have $ii_(m_0) = I_(m_0)^T A_(m_0) = I_(m_0)A_(m_0).$
+
+  Finally, $I_(m_0)$ is invertible because it is the matrix of a positive bilinear form, which yields
+  $ A_(m_0) = I_(m_0)^(-1)ii_(m_0)$.
 ]
+
+
+
