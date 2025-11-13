@@ -868,4 +868,79 @@ Computations analog to proof of @propmatfirst .
 ]
 
 
+TODO : ADD END OF LECTURE
 
+
+=== Dupin Indicator
+
+#let Dm = $cal(D)_(m_0)$
+#definition("Dupin indicator")[
+  Let $S$ be a  $cal(C)^2$ regular surface and $m_0 in S$. The Dupin Indicator is defined by :
+
+  $Dm = { X in T_(m_0) S, i i_m(X,X) = plus.minus 1} $
+]
+
+Let $(e_1,e_2)$ be the two principal directions of $S$ at $m_0$ and $kappa_1, kappa_2$ the principal curvatures. Let $X = vec(x,y)_((e_1,e_2))$.
+
+$ i i_m (X,X) = plus.minus 1 <=> kappa_1 x^2 + kappa_2 y^2 = plus.minus 1 $
+
+- *  Case 1 *: $kappa_1 kappa_2 > 0 => Dm "is an ellipse" => m_0 "is an elliptic point"$.
+- * Case 2 * : $kappa_1 kappa_2 < 0 => Dm "is a hyperbola" => m_0 "is a hyperbolic point"$.
+
+- * Case 3 * : $kappa_1 = 0 "and" kappa_2 eq.not 0 => Dm "is the union of two lines" => m_0 "is a parabolic point"$.
+
+- * Case 4 * : $kappa_1 = kappa_2 = 0 => Dm = emptyset => m_0 "is a planar point" $.
+
+Let us now motivate the Dupin indicator geometrically.
+
+Let $f$ be a $cal(C)^2$ regular surface and $m_0 in S$. #linebreak() Up to a rigid motion, we can assume $m_0 = (0,0)$, $T_(m_0) S = RR^2 times {0}$ and there exists $phi$ s.t $f(x,y) = (x,y, phi(x,y))$ in a neighborhood of $m_0 = (0,0,0)$. This yields $phi(0,0) = (0,0)$ and $d_phi (0,0) = 0_(RR^3) $.
+Computing the second fundamental form then gives:
+
+$ ii_(m_0) = 1/sqrt(1 + dvp(phi,x)(0,0)^2 + dvp(phi,y)(0,0)^2) cal(H)(phi)(0,0) => ii_(m_0) = cal(H)(phi)(0,0) . $
+
+
+We know that $cal(H)(phi)(0,0)$ is the best second order approximation of $phi$ around $m_0 = (0,0).$ Knowing this, the fact that $phi$ is approached best by a flat plane at order $1$ and the previous equality, we get the following approximation f $phi$ in the basis $(e_1,e_2)$ of $T_(m_0)S = RR^2 times {0}$ with $X = vec(x,y)$:
+
+$ phi(x,y) = 1/2 (kappa_1 x^2 + kappa_2 y^2) + o(norm(X)). $
+
+Let $epsilon > 0$. $cal(D)^(epsilon)_(m_0) = {z = epsilon} inter S$ is a curve implicitely defined by $phi(x,y) = plus.minus epsilon$. Thus :
+
+$ X = (x,y)^T in cal(D)^(epsilon)_(m_0) <=> 1/2 (kappa_1 x^2 + kappa_2 y^2) = plus.minus epsilon <=> kappa_1 (x/(sqrt(2 epsilon )))^2 +kappa_2 (y/(sqrt(2 epsilon )))^2 + o(norm(X)/epsilon)  = 1    $
+
+Thus, up to a scaling factor and approximation error, $cal(D)_(m_0)^(epsilon) = {z = epsilon} inter S$ is the Dupin indicator.
+
+
+
+
+= Bézier curves
+
+Developped in the 1970's by french car engineers Pierre Bézier and De Castelljau. Orginal motivation was to design good-looking cars with simple curve expressions for their chassis.
+
+
+== Bernstein Polynomials
+
+#let Bni = $B_i^(n)$
+#definition("Bernstein polynomials")[
+  Let $n in NN^*$ and $i in {0,..,n}.$. The Bernstein polynomials of order $n$ are :
+  $ Bni  & :  [0,1] --> RR \ & t --> vec(n, i)t^i (1 -t)^(n-1)  $
+]
+
+These polynomials satisfy many properties that will be interpreted later by the process they represent :
+
+- Non-negativity : $forall t in [0,1], Bni(t)>= 0.$
+- Partition of unity : $forall t in [0,1], sum_(i=0)^(n) Bni(t) = 1.$
+- Recursive characterization by linear interpolation : $Bni(t) = (1-t)B_(i)^(n-1)(t) + t B_(i-1)^(n-1)(t)$.
+- Symmetry : $Bni(t) = B_(n-i)^(n)(1-t)$.
+- $Bni '(t) = n [B_(i-1)^(n-1)(t) - B_i^(n-1)(t)]$.
+- ${Bni, i in {0, ..., n}}$ is a basis of $RR_n [t]$.
+- Linear precision : $ sum_(i=0)^(n) i/n Bni(t) = t$.
+
+
+#figure(
+  image("figures/bernstein49.png", width: auto, height:20%),
+  caption: [Bernstein polynomials of order 5],
+) <fimg-label>
+
+
+
+*Remark*: Berstein polynomials appear naturally in the Bézier curves process, but they also have independant relevancy. They can be defined as probabilistic objects linked to a binomial random variable (which gives an elementary proof of the linear precision) and the basis of $RR_n [t]$ they form is interesting enough to be used for uniformly approximating any continuous function on $[0,1]$, providing a constructive proof of the Weirestrass approximation theorem.
