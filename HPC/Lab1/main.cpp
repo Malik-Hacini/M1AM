@@ -74,6 +74,13 @@ double kernel__matrix_sum_rowwise(std::size_t N, const double *i_A)
 	 * STUDENT ASSIGNMENT
 	 */
 	double acc = 0;
+	for (std::size_t i = 0; i < N; i++)
+	{
+		for (std::size_t j = 0; j < N; j++)
+		{
+			acc += i_A[i*N + j];
+		}
+	}
 	return acc;
 }
 
@@ -84,6 +91,13 @@ double kernel__matrix_sum_colwise(std::size_t N, const double *i_A)
 	 * STUDENT ASSIGNMENT
 	 */
 	double acc = 0;
+	for (std::size_t j = 0; j < N; j++)
+	{
+		for (std::size_t i = 0; i < N; i++)
+		{
+			acc += i_A[i*N + j];
+		}
+	}
 	return acc;
 }
 
@@ -96,6 +110,18 @@ void kernel__matrix_matrix_mul_simple_ijk(std::size_t N, const double *i_A, cons
 	/*
 	 * STUDENT ASSIGNMENT
 	 */
+	for (std::size_t i = 0; i < N; i++)
+	{
+		for (std::size_t j = 0; j < N; j++)
+		{
+			double sum = 0;
+			for (std::size_t k = 0; k < N; k++)
+			{
+				sum += i_A[i*N + k] * i_B[k*N + j];
+			}
+			o_C[i*N + j] += sum;
+		}
+	}
 }
 
 
@@ -107,6 +133,18 @@ void kernel__matrix_matrix_mul_simple_jik(std::size_t N, const double *i_A, cons
 	/*
 	 * STUDENT ASSIGNMENT
 	 */
+	for (std::size_t j = 0; j < N; j++)
+	{
+		for (std::size_t i = 0; i < N; i++)
+		{
+			double sum = 0;
+			for (std::size_t k = 0; k < N; k++)
+			{
+				sum += i_A[i*N + k] * i_B[k*N + j];
+			}
+			o_C[i*N + j] += sum;
+		}
+	}
 }
 
 
@@ -118,6 +156,17 @@ void kernel__matrix_matrix_mul_simple_ikj(std::size_t N, const double *i_A, cons
 	/*
 	 * STUDENT ASSIGNMENT
 	 */
+	for (std::size_t i = 0; i < N; i++)
+	{
+		for (std::size_t k = 0; k < N; k++)
+		{
+			double a_ik = i_A[i*N + k];
+			for (std::size_t j = 0; j < N; j++)
+			{
+				o_C[i*N + j] += a_ik * i_B[k*N + j];
+			}
+		}
+	}
 }
 
 
@@ -129,6 +178,17 @@ void kernel__matrix_matrix_mul_simple_jki(std::size_t N, const double *i_A, cons
 	/*
 	 * STUDENT ASSIGNMENT
 	 */
+	for (std::size_t j = 0; j < N; j++)
+	{
+		for (std::size_t k = 0; k < N; k++)
+		{
+			double b_kj = i_B[k*N + j];
+			for (std::size_t i = 0; i < N; i++)
+			{
+				o_C[i*N + j] += i_A[i*N + k] * b_kj;
+			}
+		}
+	}
 }
 
 
@@ -140,6 +200,17 @@ void kernel__matrix_matrix_mul_simple_kij(std::size_t N, const double *i_A, cons
 	/*
 	 * STUDENT ASSIGNMENT
 	 */
+	for (std::size_t k = 0; k < N; k++)
+	{
+		for (std::size_t i = 0; i < N; i++)
+		{
+			double a_ik = i_A[i*N + k];
+			for (std::size_t j = 0; j < N; j++)
+			{
+				o_C[i*N + j] += a_ik * i_B[k*N + j];
+			}
+		}
+	}
 }
 
 
@@ -151,6 +222,17 @@ void kernel__matrix_matrix_mul_simple_kji(std::size_t N, const double *i_A, cons
 	/*
 	 * STUDENT ASSIGNMENT
 	 */
+	for (std::size_t k = 0; k < N; k++)
+	{
+		for (std::size_t j = 0; j < N; j++)
+		{
+			double b_kj = i_B[k*N + j];
+			for (std::size_t i = 0; i < N; i++)
+			{
+				o_C[i*N + j] += i_A[i*N + k] * b_kj;
+			}
+		}
+	}
 }
 
 
@@ -162,6 +244,17 @@ void kernel__matrix_matrix_mul_restricted_ikj(std::size_t N, const double * __re
 	/*
 	 * STUDENT ASSIGNMENT
 	 */
+	for (std::size_t i = 0; i < N; i++)
+	{
+		for (std::size_t k = 0; k < N; k++)
+		{
+			double a_ik = i_A[i*N + k];
+			for (std::size_t j = 0; j < N; j++)
+			{
+				o_C[i*N + j] += a_ik * i_B[k*N + j];
+			}
+		}
+	}
 }
 
 
@@ -284,7 +377,8 @@ void matrix_setup_A(std::size_t N, double *M)
 	{
 		for (std::size_t j = 0; j < N; j++)
 		{
-			// ...
+			double arg = M_PI * (double)(j + 0.5) * (double)(i + 0.5) / (double)N;
+			M[i*N + j] = std::cos(arg);
 		}
 	}
 }
@@ -302,6 +396,8 @@ void matrix_setup_B(std::size_t N, double *M)
 	{
 		for (std::size_t j = 0; j < N; j++)
 		{
+			double arg = M_PI * (double)(i + 0.5) * (double)(j + 0.5) / (double)N;
+			M[i*N + j] = (2.0 / (double)N) * std::cos(arg);
 		}
 	}
 }
