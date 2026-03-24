@@ -2,6 +2,7 @@
 
 make clean
 make openmp || exit 1
+export OMP_NUM_THREADS=${OMP_NUM_THREADS:-4}
 PROGRAM="./main_openmp"
 
 # Iteration range

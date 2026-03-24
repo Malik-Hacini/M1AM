@@ -1,10 +1,14 @@
 #include "include/Stopwatch.hpp"
+#include <algorithm>
 #include <cmath>
+#include <cstdint>
+#include <cstdlib>
 #include <iomanip>
 #include <iostream>
-#include <stdlib.h>
 
 #define CACHE_CONST_BLOCKING_SIZE 16
+#define MATRIX_ALIGNMENT_BYTES 512
+#define SIMD_ALIGNMENT_BYTES 64
 
 /**
  * Different implementations
@@ -35,13 +39,13 @@ enum {
 /**
  * Output how to use the program
  */
-void print_program_usage(int argc, char *argv[]) {
+void print_program_usage(char *argv[]) {
   std::cout << std::endl;
   std::cout << "Program usage:" << std::endl;
   std::cout << std::endl;
   std::cout << "  " << argv[0]
-            << " [mat-mat-mul variant (int)] [N probem size (int) >= 1] [cache "
-               "block size (int) >= 1] "
+            << " [mat-mat-mul variant (int)] [N problem size (int) >= 1] [cache "
+                "block size (int) >= 1] "
             << std::endl;
   std::cout << std::endl;
 }
@@ -57,6 +61,124 @@ void print_matrix(std::size_t N, const double *C) {
         std::cout << "\t";
     }
     std::cout << std::endl;
+  }
+}
+
+double *allocate_aligned_buffer(std::size_t num_entries) {
+  void *buffer = nullptr;
+  const std::size_t num_bytes = num_entries * sizeof(double);
+
+  const int err = posix_memalign(&buffer, MATRIX_ALIGNMENT_BYTES, num_bytes);
+  if (err != 0 || buffer == nullptr) {
+    std::cerr << "Failed to allocate " << num_bytes << " bytes aligned to "
+              << MATRIX_ALIGNMENT_BYTES << " bytes" << std::endl;
+    exit(EXIT_FAILURE);
+  }
+
+  return static_cast<double *>(buffer);
+}
+
+inline bool is_pointer_aligned(const void *ptr, std::size_t alignment) {
+  return reinterpret_cast<std::uintptr_t>(ptr) % alignment == 0;
+}
+
+inline void update_row_simd(std::size_t count, double a_ik,
+                            const double *b_row, double *c_row) {
+  if (is_pointer_aligned(b_row, SIMD_ALIGNMENT_BYTES) &&
+      is_pointer_aligned(c_row, SIMD_ALIGNMENT_BYTES)) {
+#pragma omp simd aligned(b_row, c_row : SIMD_ALIGNMENT_BYTES)
+    for (std::size_t j = 0; j < count; ++j) {
+      c_row[j] += a_ik * b_row[j];
+    }
+  } else {
+#pragma omp simd
+    for (std::size_t j = 0; j < count; ++j) {
+      c_row[j] += a_ik * b_row[j];
+    }
+  }
+}
+
+void kernel__matrix_matrix_mul_blocked_ikj_impl(
+    std::size_t N, const double *__restrict__ i_A,
+    const double *__restrict__ i_B, double *__restrict__ o_C,
+    std::size_t cache_blocking_size) {
+  for (std::size_t i_block = 0; i_block < N; i_block += cache_blocking_size) {
+    const std::size_t i_end =
+        std::min(i_block + cache_blocking_size, static_cast<std::size_t>(N));
+
+    for (std::size_t k_block = 0; k_block < N; k_block += cache_blocking_size) {
+      const std::size_t k_end =
+          std::min(k_block + cache_blocking_size, static_cast<std::size_t>(N));
+
+      for (std::size_t j_block = 0; j_block < N;
+           j_block += cache_blocking_size) {
+        const std::size_t j_end =
+            std::min(j_block + cache_blocking_size,
+                     static_cast<std::size_t>(N));
+
+        for (std::size_t i = i_block; i < i_end; ++i) {
+          const std::size_t c_row_offset = i * N;
+
+          for (std::size_t k = k_block; k < k_end; ++k) {
+            const double a_ik = i_A[c_row_offset + k];
+            const std::size_t b_row_offset = k * N;
+            double *c_row = o_C + c_row_offset + j_block;
+            const double *b_row = i_B + b_row_offset + j_block;
+            const std::size_t tile_width = j_end - j_block;
+
+            for (std::size_t j = 0; j < tile_width; ++j) {
+              c_row[j] += a_ik * b_row[j];
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+void kernel__matrix_matrix_mul_openmp_blocked_ikj_impl(
+    std::size_t N, const double *__restrict__ i_A,
+    const double *__restrict__ i_B, double *__restrict__ o_C,
+    std::size_t cache_blocking_size) {
+  const long num_i_blocks =
+      (static_cast<long>(N) + static_cast<long>(cache_blocking_size) - 1) /
+      static_cast<long>(cache_blocking_size);
+
+#if defined(_OPENMP)
+#pragma omp parallel for schedule(static)
+#endif
+  for (long i_block_index = 0; i_block_index < num_i_blocks;
+       ++i_block_index) {
+    const std::size_t i_block =
+        static_cast<std::size_t>(i_block_index) * cache_blocking_size;
+    const std::size_t i_end =
+        std::min(i_block + cache_blocking_size, static_cast<std::size_t>(N));
+
+    for (std::size_t k_block = 0; k_block < N; k_block += cache_blocking_size) {
+      const std::size_t k_end =
+          std::min(k_block + cache_blocking_size, static_cast<std::size_t>(N));
+
+      for (std::size_t j_block = 0; j_block < N;
+           j_block += cache_blocking_size) {
+        const std::size_t j_end =
+            std::min(j_block + cache_blocking_size,
+                     static_cast<std::size_t>(N));
+
+        for (std::size_t i = i_block; i < i_end; ++i) {
+          const std::size_t c_row_offset = i * N;
+
+          for (std::size_t k = k_block; k < k_end; ++k) {
+            const double a_ik = i_A[c_row_offset + k];
+            const std::size_t b_row_offset = k * N;
+            double *c_row = o_C + c_row_offset + j_block;
+            const double *b_row = i_B + b_row_offset + j_block;
+            const std::size_t tile_width = j_end - j_block;
+
+            update_row_simd(tile_width, a_ik, b_row, c_row);
+          }
+        }
+      }
+    }
   }
 }
 
@@ -223,9 +345,8 @@ void kernel__matrix_matrix_mul_var_blocked_ikj(
     std::size_t N, const double *__restrict__ i_A,
     const double *__restrict__ i_B, double *__restrict__ o_C,
     std::size_t cache_blocking_size) {
-  /*
-   * STUDENT ASSIGNMENT
-   */
+  kernel__matrix_matrix_mul_blocked_ikj_impl(N, i_A, i_B, o_C,
+                                             cache_blocking_size);
 }
 
 /**
@@ -235,9 +356,8 @@ void kernel__matrix_matrix_mul_blocked_ikj(std::size_t N,
                                            const double *__restrict__ i_A,
                                            const double *__restrict__ i_B,
                                            double *__restrict__ o_C) {
-  /*
-   * STUDENT ASSIGNMENT
-   */
+  kernel__matrix_matrix_mul_blocked_ikj_impl(N, i_A, i_B, o_C,
+                                             CACHE_CONST_BLOCKING_SIZE);
 }
 
 /**
@@ -247,9 +367,18 @@ void kernel__matrix_matrix_mul_simd_ikj(std::size_t N,
                                         const double *__restrict__ i_A,
                                         const double *__restrict__ i_B,
                                         double *__restrict__ o_C) {
-  /*
-   * STUDENT ASSIGNMENT
-   */
+  for (std::size_t i = 0; i < N; ++i) {
+    const std::size_t c_row_offset = i * N;
+    double *c_row = o_C + c_row_offset;
+
+    for (std::size_t k = 0; k < N; ++k) {
+      const double a_ik = i_A[c_row_offset + k];
+      const std::size_t b_row_offset = k * N;
+      const double *b_row = i_B + b_row_offset;
+
+      update_row_simd(N, a_ik, b_row, c_row);
+    }
+  }
 }
 
 /**
@@ -259,9 +388,8 @@ void kernel__matrix_matrix_mul_openmp_ikj(std::size_t N,
                                           const double *__restrict__ i_A,
                                           const double *__restrict__ i_B,
                                           double *__restrict__ o_C) {
-  /*
-   * STUDENT ASSIGNMENT
-   */
+  kernel__matrix_matrix_mul_openmp_blocked_ikj_impl(
+      N, i_A, i_B, o_C, CACHE_CONST_BLOCKING_SIZE);
 }
 
 /**
@@ -270,7 +398,10 @@ void kernel__matrix_matrix_mul_openmp_ikj(std::size_t N,
 void kernel__matrix_matrix_mul_opti_ikj(std::size_t N,
                                         const double *__restrict__ i_A,
                                         const double *__restrict__ i_B,
-                                        double *__restrict__ o_C) {}
+                                        double *__restrict__ o_C) {
+  kernel__matrix_matrix_mul_openmp_blocked_ikj_impl(
+      N, i_A, i_B, o_C, CACHE_CONST_BLOCKING_SIZE);
+}
 
 /**
  * Run MKL-based marix-matrix multiplication
@@ -356,11 +487,7 @@ void matrix_setup_B(std::size_t N, double *M) {
  * This data will be overwritten later on (hopefully).
  */
 void matrix_zero_C(std::size_t N, double *M) {
-  for (std::size_t i = 0; i < N; i++) {
-    for (std::size_t j = 0; j < N; j++) {
-      M[j * N + i] = 0;
-    }
-  }
+  std::fill(M, M + N * N, 0.0);
 }
 
 /**
@@ -372,10 +499,10 @@ void flush_cache() {
   std::size_t N = 1024 * 1024 * 256 / sizeof(double); // 256 MB
   volatile double *buffer = new double[N];
 
-  for (int i = 0; i < N; i++)
+  for (std::size_t i = 0; i < N; i++)
     buffer[i] = i;
 
-  for (int i = 1; i < N; i++)
+  for (std::size_t i = 1; i < N; i++)
     buffer[i] = buffer[i - 1];
 
   delete[] buffer;
@@ -465,26 +592,28 @@ int main(int argc, char *argv[]) {
   /**
    * Variant ID
    */
-  if (argc >= 2) {
-    variant_id = atoi(argv[1]);
-  }
+  if (argc >= 2)
+    variant_id = std::atoi(argv[1]);
 
   /**
    * Problem size
    */
-  if (argc >= 3) {
-    N = atoi(argv[2]);
-  }
+  if (argc >= 3)
+    N = std::atol(argv[2]);
 
   /**
    * Bogus parameter which can be used for different things (e.g. blocking)
    */
-  if (argc >= 4) {
-    cache_blocking_size = atoi(argv[3]);
-  }
+  if (argc >= 4)
+    cache_blocking_size = std::atol(argv[3]);
 
   if (N <= 0) {
-    print_program_usage(argc, argv);
+    print_program_usage(argv);
+    return -1;
+  }
+
+  if (cache_blocking_size <= 0) {
+    std::cerr << "Cache blocking size must be >= 1" << std::endl;
     return -1;
   }
 
@@ -509,9 +638,9 @@ int main(int argc, char *argv[]) {
    * Setup matrix multiplication
    */
 
-  A = new double[N * N];
-  B = new double[N * N];
-  C = new double[N * N];
+  A = allocate_aligned_buffer(N * N);
+  B = allocate_aligned_buffer(N * N);
+  C = allocate_aligned_buffer(N * N);
 
   /**
    * Setup particular benchmark
@@ -563,51 +692,22 @@ int main(int argc, char *argv[]) {
 
   case MATRIX_MATRIX_MUL_VAR_BLOCKED_IKJ:
     kernel_str = "mm_mul_var_blocked_ikj";
-
-    if (N < cache_blocking_size) {
-      std::cerr << "Cache blocking size must be at least N" << std::endl;
-      exit(1);
-    }
     break;
 
   case MATRIX_MATRIX_MUL_BLOCKED_IKJ:
     kernel_str = "mm_mul_blocked_ikj";
-
-    if (N < CACHE_CONST_BLOCKING_SIZE) {
-      std::cerr << "Precompiler cache blocking size must be at least N"
-                << std::endl;
-      exit(1);
-    }
     break;
 
   case MATRIX_MATRIX_MUL_SIMD_IKJ:
     kernel_str = "mm_mul_simd_ikj";
-
-    if (N < CACHE_CONST_BLOCKING_SIZE) {
-      std::cerr << "Precompiler cache blocking size must be at least N"
-                << std::endl;
-      exit(1);
-    }
     break;
 
   case MATRIX_MATRIX_MUL_OPENMP_IKJ:
     kernel_str = "mm_mul_simd_openmp_ikj";
-
-    if (N < CACHE_CONST_BLOCKING_SIZE) {
-      std::cerr << "Precompiler cache blocking size must be at least N"
-                << std::endl;
-      exit(1);
-    }
     break;
 
   case MATRIX_MATRIX_MUL_OPTI_IKJ:
     kernel_str = "mm_mul_simd_opti_ikj";
-
-    if (N < CACHE_CONST_BLOCKING_SIZE) {
-      std::cerr << "Precompiler cache blocking size must be at least N"
-                << std::endl;
-      exit(1);
-    }
     break;
 
   case MATRIX_MATRIX_MUL_MKL_IKJ:
@@ -784,7 +884,7 @@ int main(int argc, char *argv[]) {
   /**
    * Free allocated data
    */
-  delete[] A;
-  delete[] B;
-  delete[] C;
+  free(A);
+  free(B);
+  free(C);
 }

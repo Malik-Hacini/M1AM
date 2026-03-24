@@ -1,41 +1,41 @@
+High Performance Computing - Labs 1 to 3
 
+Main files
 
-README		# This file
+- `main.cpp`: matrix kernels from Lab 1 to Lab 3
+- `quad.cpp`: numerical integration benchmark for Lab 3
+- `Makefile`: builds all executables from the lab root
+- `include/Stopwatch.hpp`: timing helper
+- `slides/submission.pdf`: final presentation PDF
 
-main.cpp	# main and only cpp file
+Build
 
-lib		# Some helper libraries
+- `make`
 
-Makefile	# Makefile
+Useful runs
 
-plot_csv.py	# Python plotting routine, see below
+- `./run_01_matrix_norm_novec.sh`
+- `./run_02a_mmul_simple_ijk.sh`
+- `./run_02b_mmul_simple_all.sh`
+- `./run_03_mmul_restrict.sh`
+- `./run_04_mmul_blocked.sh`
+- `./run_05_mmul_simd.sh`
+- `./run_06_mmul_openmp.sh`
+- `./run_08_quadrature.sh`
 
-benchmark_base.sh	# script used by run_* benchmarks
-run_01_matrix_norm_novec.sh	# Benchmark helpers
-run_02a_mmul_simple_ijk.sh
-run_02b_mmul_simple_all.sh
-run_03_mmul_restrict.sh
-run_04_mmul_blocked.sh
-run_05_mmul_simd.sh
-run_06_mmul_openmp.sh
-run_07_mmul_avx2.sh
-run_08_mmul_opti_large.sh
-run_08_mmul_opti.sh
-run_09_mmul_mkl.sh
-run_all.sh
+Plotting
 
-run_valgrind_memcheck.sh	# Valgrind memory checker
+The Python helpers are:
 
+- `plot_csv.py`
+- `plot_quad_csv.py`
+- `generate_submission_figures.py`
 
-====================
-plot_csv.py
-====================
-The run_* scripts output some csv files.
+Local Python environment:
 
-They can be plotted by using
-	./plot_csv.py output_file1.csv output_file2.csv
+- `python3 -m venv .venv`
+- `./.venv/bin/pip install -r requirements.txt`
 
-This allows you to also plot different csv outputs together.
+Generate the figures used in the slides:
 
-Additionally, a PDF is created and is called the same as the first csv file except the file name ending which is replaced by .pdf
-
+- `./.venv/bin/python generate_submission_figures.py`

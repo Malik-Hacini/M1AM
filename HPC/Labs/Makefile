@@ -1,5 +1,9 @@
 
+CXX ?= g++
 CXXFLAGS=
+MAIN_DEPS=main.cpp include/Stopwatch.hpp
+
+.PHONY: all nosimd simd openmp avx2 opti quad debug clean
 
 #
 # Disable loop blocking optimizations by compiler
@@ -24,35 +28,39 @@ LDFLAGS_OMP+=-fopenmp
 # AVX2
 CXXFLAGS+=-ftree-vectorize -fstrict-aliasing
 
-all: nosimd simd openmp debug
+all: nosimd simd openmp debug quad
 	@echo "Compiling all targets"
 
 
 # default is to use NO vectorization
-nosimd: main.cpp
+nosimd: $(MAIN_DEPS)
 	# Try to disable vectorization.
 	# Still uses SSE, but not in a vectorized way
 	$(CXX) -O3 $(CXXFLAGS) -fno-tree-vectorize -mno-avx main.cpp -c -o main_nosimd.o
 	$(CXX) main_nosimd.o $(LDFLAGS) $(LDFLAGS_NOOMP) -o main_nosimd
 
-simd: main.cpp
+simd: $(MAIN_DEPS)
 	$(CXX) -O3 $(CXXFLAGS) $(CXXFLAGS_SIMD) main.cpp -c -o main_simd.o
 	$(CXX) main_simd.o $(LDFLAGS) $(LDFLAGS_NOOMP) -o main_simd
 
-openmp: main.cpp
+openmp: $(MAIN_DEPS)
 	$(CXX) -O3 $(CXXFLAGS) $(CXXFLAGS_SIMD) $(CXXFLAGS_OMP) main.cpp -c -o main_openmp.o
 	$(CXX) main_openmp.o $(LDFLAGS) $(LDFLAGS_OMP) -o main_openmp
 
-avx2: main.cpp
+avx2: $(MAIN_DEPS)
 	$(CXX) -O3 -mavx2 $(CXXFLAGS) $(CXXFLAGS_SIMD) $(CXXFLAGS_OMP) main.cpp -c -o main_avx2.o
 	$(CXX) main_avx2.o $(LDFLAGS) $(LDFLAGS_OMP) -o main_avx2
 
-opti: main.cpp
+opti: $(MAIN_DEPS)
 	$(CXX) -O3 -mavx2 $(CXXFLAGS) $(CXXFLAGS_SIMD) $(CXXFLAGS_OMP) main.cpp -c -o main_opti.o
 	$(CXX) main_opti.o $(LDFLAGS) $(LDFLAGS_OMP) -o main_opti
 
+quad: quad.cpp include/Stopwatch.hpp
+	$(CXX) -O3 $(CXXFLAGS) $(CXXFLAGS_SIMD) $(CXXFLAGS_OMP) quad.cpp -c -o quad.o
+	$(CXX) quad.o $(LDFLAGS) $(LDFLAGS_OMP) -o quad
 
-debug:
+
+debug: $(MAIN_DEPS)
 	$(CXX) -O0 $(CXXFLAGS) main.cpp -c -o main_debug.o
 	$(CXX) main_debug.o $(LDFLAGS) $(LDFLAGS_NOOMP) -o main_debug
 
@@ -75,3 +83,5 @@ clean:
 	rm -f main_opti.o
 	rm -f main_opti
 
+	rm -f quad.o
+	rm -f quad

@@ -2,6 +2,7 @@
 
 make clean
 make avx2 || exit 1
+export OMP_NUM_THREADS=${OMP_NUM_THREADS:-4}
 PROGRAM="./main_avx2"
 
 # Iteration range
