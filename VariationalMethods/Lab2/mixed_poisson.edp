@@ -1,0 +1,50 @@
+verbosity=0;
+
+// Borders: Gamma_D has label 1, Gamma_N has label 2
+border bottom(t=0.0,0.5){x=t;y=-1.0/3.0;label=1;};
+border right(t=-1.0/3.0,1.0/3.0){x=0.5;y=t;label=2;};
+border top(t=0.5,0.0){x=t;y=1.0/3.0;label=1;};
+border left(t=1.0/3.0,-1.0/3.0){x=0.0;y=t;label=2;};
+
+// Mesh
+int p=50;
+mesh Omega=buildmesh(bottom(p)+right(p)+top(p)+left(p));
+plot(Omega,wait=true);
+
+// Approximate space
+fespace Vh(Omega,P1);
+
+// Exact solution and second member for question 2 (case a = 0)
+int m=1,n=1;
+real a=0.0;
+func uexact=cos(2*pi*n*x)*sin(3*pi*m*y);
+func real f(){
+    return pi^2*(4*n^2+9*m^2)*uexact;
+}
+
+// Solve -Delta u=f with u=0 on Gamma_D and dn u=a on Gamma_N
+Vh uh, vh, u0, delta, u, err; // need to declare this belonging to Vh
+problem poisson(uh,vh)=int2d(Omega)(dx(uh)*dx(vh)+dy(uh)*dy(vh))-int2d(Omega)(f()*vh)-int1d(Omega,2)(a*vh)+on(1,uh=0); // non-homegenous neumann
+
+// Validation for question 2: a = 0
+a=0.0;
+poisson;
+u0=uh;
+u=uexact;
+err=abs(u-uh);
+plot(uh,wait=true,value=true,fill=true);
+plot(err,wait=true,value=true,fill=true);
+cout<< "a = "<<a<<", error L^infinity: "<<err[].max<<endl;
+
+// Question 4: effect of the Neumann datum a
+real[int] avals(5);
+avals=[-5.0,-1.0,0.0,1.0,5.0];
+
+for (int k=0; k<avals.n; ++k) {  //for loop syntax
+    a=avals[k];
+    poisson;
+    delta=uh-u0;
+    cout<< "a = "<<a<<", min(uh) = "<<uh[].min<<", max(uh) = "<<uh[].max<<endl;
+    plot(uh,cmm = "uh, a = " + a, wait=true,value=true,fill=true); //plot titles
+    plot(delta,cmm= "delta = u_h - u_0, a = " + a, wait=true,value=true,fill=true);
+}

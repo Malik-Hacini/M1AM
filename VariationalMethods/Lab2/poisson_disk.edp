@@ -1,0 +1,32 @@
+verbosity = 0;
+int n = 10;
+real R = 1.0;
+border circle(t = 0, 2*pi) { x = R*cos(t); y = R*sin(t); label = 1; };
+mesh ThDisk = buildmesh(circle(4*n));
+plot(ThDisk, cmm = "Disk mesh", wait = true);
+fespace Vh(ThDisk, P1);
+Vh uh, vh;
+real fval = 1.0;
+// Dirichlet
+problem dirichlet(uh, vh)
+  = int2d(ThDisk)(dx(uh)*dx(vh) + dy(uh)*dy(vh))
+  - int2d(ThDisk)(fval*vh)
+  + on(1, uh = 0);
+real[int] ftests = [1.0, 0.0];
+for (int k = 0; k < ftests.n; ++k) {
+    fval = ftests[k];
+    dirichlet;
+    cout << "f = " << fval
+         << ", min(uh) = " << uh[].min
+         << ", max(uh) = " << uh[].max << endl;
+    plot(uh, cmm= "f = " + fval, wait = true, value = true, fill = true);
+}
+
+// Homogeneous Neumann
+problem neumann(uh, vh)
+  = int2d(ThDisk)(dx(uh)*dx(vh) + dy(uh)*dy(vh))
+  - int2d(ThDisk)(fval*vh);
+
+
+neumann; // problem is not well posed
+plot(uh, cmm= "neumann", wait=true, value=true, fill=true);

@@ -1,0 +1,122 @@
+verbosity = 0;
+
+// Lab 2, part 3: mesh adaptation for Poisson with Dirichlet BC.
+//
+// The lecture background is in:
+// - Lectures/slides_VMAM_part1.pdf: weak formulation of Poisson
+// - Lectures/VMAM_slides_part2.pdf: finite element meshes and P1 spaces
+//
+// This script is intentionally minimal:
+// - choose one re-entrant domain: L-shape or T-shape,
+// - solve with f = 1,
+// - solve with a trigonometric RHS adjusted so that the associated exact mode
+//   vanishes on the whole boundary of the chosen domain,
+// - adapt the mesh several times with adaptmesh.
+
+// ---------------------------------------------------------------------------
+// 1) User choices
+// ---------------------------------------------------------------------------
+
+int shapeId = 0;     // 0 = L-shape, 1 = T-shape
+int n0 = 8;          // coarse boundary discretization
+int nAdapt = 5;      // number of mesh adaptation steps
+real tol = 0.02;     // target interpolation tolerance for adaptmesh
+
+// ---------------------------------------------------------------------------
+// 2) Domain definitions
+// ---------------------------------------------------------------------------
+// All boundary labels are set to 1 so that homogeneous Dirichlet conditions
+// are imposed with on(1, uh = 0).
+
+// L-shape inside (0,1)^2 with the top-right quarter removed.
+real[int] xL = [0.0, 1.0, 1.0, 0.5, 0.5, 0.0, 0.0];
+real[int] yL = [0.0, 0.0, 0.5, 0.5, 1.0, 1.0, 0.0];
+int[int] nL = [n0, n0, n0, n0, n0, n0];
+border edgeL(t = 0, 1; i) {
+    x = xL[i] + t*(xL[i + 1] - xL[i]);
+    y = yL[i] + t*(yL[i + 1] - yL[i]);
+    label = 1;
+};
+
+// T-shape inside (0,1)^2.
+// The special values 1/4, 1/2 and 3/4 are convenient for the sine mode below.
+real[int] xT = [0.25, 0.75, 0.75, 1.0, 1.0, 0.0, 0.0, 0.25, 0.25];
+real[int] yT = [0.0, 0.0, 0.5, 0.5, 1.0, 1.0, 0.5, 0.5, 0.0];
+int[int] nT = [n0, n0, n0, n0, n0, n0, n0, n0];
+border edgeT(t = 0, 1; i) {
+    x = xT[i] + t*(xT[i + 1] - xT[i]);
+    y = yT[i] + t*(yT[i + 1] - yT[i]);
+    label = 1;
+};
+
+mesh Th0;
+int mMode, nMode;
+string shapeName;
+
+if (shapeId == 0) {
+    Th0 = buildmesh(edgeL(nL));
+    // The extra boundary segments are x = 1/2 and y = 1/2, so m = n = 2 works.
+    mMode = 2;
+    nMode = 2;
+    shapeName = "L-shape";
+}
+else {
+    Th0 = buildmesh(edgeT(nT));
+    // The extra boundary segments are x = 1/4, x = 3/4 and y = 1/2.
+    // A convenient choice is m = 4 and n = 2.
+    mMode = 4;
+    nMode = 2;
+    shapeName = "T-shape";
+}
+
+plot(Th0, cmm = "Initial coarse mesh on " + shapeName, wait = true);
+
+// Right-hand sides.
+func fConst = 1.0;
+func fMode = pi^2*(mMode^2 + nMode^2)*sin(pi*mMode*x)*sin(pi*nMode*y);
+
+// ---------------------------------------------------------------------------
+// 3) Helper routine: solve on the current mesh and optionally adapt it
+// ---------------------------------------------------------------------------
+// adaptmesh uses a metric built from the current finite element solution.
+// In practice, the mesh is refined where uh varies rapidly / has large
+// curvature, and kept coarser where uh is smooth.
+
+for (int rhsCase = 0; rhsCase < 2; ++rhsCase) {
+
+    mesh Th = Th0;
+    string rhsName = (rhsCase == 0) ? "f = 1" : "sine-mode RHS";
+
+    for (int iter = 0; iter <= nAdapt; ++iter) {
+
+        fespace Vh(Th, P1);
+        Vh uh, vh;
+
+        if (rhsCase == 0) {
+            solve poisson(uh, vh)
+                = int2d(Th)(dx(uh)*dx(vh) + dy(uh)*dy(vh))
+                - int2d(Th)(fConst*vh)
+                + on(1, uh = 0);
+        }
+        else {
+            solve poisson(uh, vh)
+                = int2d(Th)(dx(uh)*dx(vh) + dy(uh)*dy(vh))
+                - int2d(Th)(fMode*vh)
+                + on(1, uh = 0);
+        }
+
+        cout << shapeName
+             << ", " << rhsName
+             << ", iteration " << iter
+             << ": nv = " << Th.nv
+             << ", nt = " << Th.nt << endl;
+
+        plot(Th, cmm = shapeName + ", " + rhsName + ", mesh iter = " + iter, wait = true);
+        plot(uh, cmm = shapeName + ", " + rhsName + ", solution iter = " + iter,
+             wait = true, value = true, fill = true);
+
+        if (iter < nAdapt) {
+            Th = adaptmesh(Th, uh, err = tol);
+        }
+    }
+}

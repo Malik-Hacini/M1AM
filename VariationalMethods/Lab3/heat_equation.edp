@@ -1,0 +1,126 @@
+verbosity = 0;
+
+// Lab 3: heat equation, without the "to go further" part.
+//
+// We solve
+//     du/dt - nu * Delta u = f  in Omega x (0,T]
+//     u = 0                    on dOmega x (0,T]
+//     u(0,.) = u0              in Omega
+// on Omega = (0,2) x (0,1) with a theta-scheme in time and P1 finite elements
+// in space.
+//
+// Variational form at one time step:
+// find u^{n+1} in V_h such that for all v_h in V_h,
+//
+//   int_Omega u^{n+1} v_h / dt
+// + nu * theta * int_Omega grad(u^{n+1}) . grad(v_h)
+//
+// = int_Omega u^n v_h / dt
+// + int_Omega f v_h
+// - nu * (1-theta) * int_Omega grad(u^n) . grad(v_h)
+//
+// with homogeneous Dirichlet conditions imposed by on(..., u = 0).
+
+// ---------------------------------------------------------------------------
+// 1) Parameters you may modify for questions 3, 4 and 5
+// ---------------------------------------------------------------------------
+
+real T = 5.0;
+real nu = 0.1;
+real theta = 1.0;      // 1 = implicit, 0.5 = Crank-Nicolson, 0 = explicit
+int nTimeSteps = 100;
+real dt = T / nTimeSteps;
+
+int nx = 40;
+int ny = 20;
+int plotEvery = 10;
+
+// Optional mesh adaptation for question 5.
+// Keep useAdapt = false for the minimal script.
+bool useAdapt = false;
+int adaptEvery = 10;
+real adaptTol = 0.02;
+
+// ---------------------------------------------------------------------------
+// 2) Mesh and finite element space
+// ---------------------------------------------------------------------------
+
+// square(nx,ny,[2*x,y]) maps the unit square (x,y) in (0,1)^2 to (2x,y),
+// hence to the rectangle (0,2) x (0,1).
+mesh Th = square(nx, ny, [2.0*x, y]);
+plot(Th, cmm = "Initial mesh on Omega = (0,2) x (0,1)", wait = true);
+
+fespace Vh(Th, P1);
+Vh u, uold, v, fh, u0h;
+
+// ---------------------------------------------------------------------------
+// 3) Source term f and initial datum u0
+// ---------------------------------------------------------------------------
+
+real p1x = 0.5, p1y = 0.75, rf = 0.12;
+real p2x = 1.5, p2y = 0.25, ru0 = 0.2;
+
+func real sourceTerm() {
+    real r = sqrt((x - p1x)^2 + (y - p1y)^2);
+    if (r < rf) {
+        return 10.0;
+    }
+    return 0.0;
+}
+
+func real initialTemperature() {
+    real r = sqrt((x - p2x)^2 + (y - p2y)^2);
+    if (r < ru0) {
+        return 100.0 * (ru0 - r);
+    }
+    return 0.0;
+}
+
+fh = sourceTerm();
+u0h = initialTemperature();
+uold = u0h;
+
+plot(fh, cmm = "Source term f", wait = true, value = true, fill = true);
+plot(u0h, cmm = "Initial temperature u0", wait = true, value = true, fill = true);
+
+// ---------------------------------------------------------------------------
+// 4) One-step problem for the theta-scheme
+// ---------------------------------------------------------------------------
+// The old temperature uold is treated as known data.
+
+problem heatStep(u, v)
+    = int2d(Th)(u*v/dt + nu*theta*(dx(u)*dx(v) + dy(u)*dy(v)))
+    - int2d(Th)(uold*v/dt + fh*v - nu*(1.0 - theta)*(dx(uold)*dx(v) + dy(uold)*dy(v)))
+    + on(1, 2, 3, 4, u = 0);
+
+// ---------------------------------------------------------------------------
+// 5) Time loop
+// ---------------------------------------------------------------------------
+
+plot(uold, cmm = "Temperature at t = 0", wait = true, value = true, fill = true);
+
+for (int n = 0; n < nTimeSteps; ++n) {
+    real tnp1 = (n + 1) * dt;
+
+    heatStep;
+
+    if (((n + 1) % plotEvery) == 0 || n == nTimeSteps - 1) {
+        cout << "step = " << (n + 1)
+             << ", t = " << tnp1
+             << ", min(u) = " << u[].min
+             << ", max(u) = " << u[].max << endl;
+        plot(u, cmm = "Temperature at t = " + tnp1, wait = true, value = true, fill = true);
+    }
+
+    // For question 5: adapt the mesh every adaptEvery time steps so that the
+    // mesh follows the moving temperature profile.
+    if (useAdapt && ((n + 1) % adaptEvery) == 0 && n < nTimeSteps - 1) {
+        Th = adaptmesh(Th, u, err = adaptTol);
+        fh = sourceTerm(); // reinterpolate f on the new mesh
+        u = u;             // interpolate current solution on the new mesh
+        uold = uold;       // interpolate previous solution on the new mesh
+        plot(Th, cmm = "Adapted mesh at t = " + tnp1, wait = true);
+    }
+
+    uold = u;
+}

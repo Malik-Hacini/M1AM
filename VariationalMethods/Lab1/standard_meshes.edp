@@ -1,0 +1,95 @@
+verbosity = 0;
+// Standard mesh constructions for Lab 1.
+//
+// FreeFem++ mesh syntax quick reminder:
+// - square(nx, ny) meshes the unit square [0,1]^2.
+// - square(nx, ny, [X, Y]) applies the map (x,y) -> (X(x,y), Y(x,y)) to
+//   the unit square mesh; this is convenient for rectangles.
+// - border c(t = a, b){ x = ...; y = ...; label = ...; } defines one
+//   parametrized boundary arc.
+// - buildmesh(c1(n1) + c2(n2) + ...) discretizes each border with ni
+//   boundary segments, then triangulates the enclosed domain.
+// - The outer boundary should be traversed counterclockwise so that the
+//   domain stays on the left.
+// - For a hole, orient the inner boundary clockwise or use a negative
+//   subdivision count in buildmesh.
+
+int n = 20;
+
+// 1) Unit square built directly with square.
+mesh ThSquare = square(n, n);
+plot(ThSquare, cmm = "Unit square: square(n,n)", wait = true);
+
+// 2) Rectangle obtained from square by an affine map of [0,1]^2.
+real x0 = 0.0, x1 = 2.0;
+real yMin = -0.5, yMax = 0.75;
+mesh ThRectSquare = square(n, n, [x0 + (x1 - x0)*x, yMin + (yMax - yMin)*y]);
+plot(ThRectSquare, cmm = "Rectangle from square(...,[X,Y])", wait = true);
+
+// 3) Rectangle built explicitly from four borders.
+//    top and left are written with reversed parameter ranges so that the
+//    full contour is traversed counterclockwise.
+border bottom(t = 0, 1) { x = x0 + (x1 - x0)*t; y = yMin; label = 1; };
+border right(t = 0, 1)  { x = x1; y = yMin + (yMax - yMin)*t; label = 2; };
+border top(t = 1, 0)    { x = x0 + (x1 - x0)*t; y = yMax; label = 3; };
+border left(t = 1, 0)   { x = x0; y = yMin + (yMax - yMin)*t; label = 4; };
+mesh ThRectBorder = buildmesh(bottom(n) + right(n) + top(n) + left(n));
+plot(ThRectBorder, cmm = "Rectangle from border + buildmesh", wait = true);
+
+// 4) Disk: one border parameterized by the angle t in [0, 2*pi].
+real R = 1.0;
+border circle(t = 0, 2*pi) { x = R*cos(t); y = R*sin(t); label = 1; };
+mesh ThDisk = buildmesh(circle(4*n));
+plot(ThDisk, cmm = "Disk from a circular border", wait = true);
+
+// 5) Ellipse: same idea, but x and y are scaled differently.
+real aEllipse = 1.5;
+real bEllipse = 0.75;
+border ellipse(t = 0, 2*pi) { x = aEllipse*cos(t); y = bEllipse*sin(t); label = 1; };
+mesh ThEllipse = buildmesh(ellipse(4*n));
+plot(ThEllipse, cmm = "Ellipse from a parametrized border", wait = true);
+
+// 6) L-shaped polygon using the indexed-border syntax.
+//    border poly(t = 0,1; i){...} reuses the same formula on each edge i.
+real[int] xL = [0.0, 1.0, 1.0, 0.5, 0.5, 0.0, 0.0];
+real[int] yL = [0.0, 0.0, 0.5, 0.5, 1.0, 1.0, 0.0];
+int[int] nL = [n, n, n, n, n, n];
+border edgeL(t = 0, 1; i) {
+    x = xL[i] + t*(xL[i + 1] - xL[i]);
+    y = yL[i] + t*(yL[i + 1] - yL[i]);
+    label = i + 1;
+};
+mesh ThL = buildmesh(edgeL(nL));
+plot(ThL, cmm = "L-shaped domain from polygonal borders", wait = true);
+
+// 7) T-shaped polygon.
+real[int] xT = [0.35, 0.65, 0.65, 1.0, 1.0, 0.0, 0.0, 0.35, 0.35];
+real[int] yT = [0.0, 0.0, 0.65, 0.65, 1.0, 1.0, 0.65, 0.65, 0.0];
+int[int] nT = [n, n, n, n, n, n, n, n];
+border edgeT(t = 0, 1; i) {
+    x = xT[i] + t*(xT[i + 1] - xT[i]);
+    y = yT[i] + t*(yT[i + 1] - yT[i]);
+    label = i + 1;
+};
+mesh ThT = buildmesh(edgeT(nT));
+plot(ThT, cmm = "T-shaped domain from polygonal borders", wait = true);
+
+// 8) Annulus: the inner boundary is a hole.
+//    Here the circle formula stays counterclockwise, but a negative number
+//    of segments tells buildmesh that this border is interior.
+real Rout = 1.2;
+real Rin = 0.45;
+border outerCircle(t = 0, 2*pi) { x = Rout*cos(t); y = Rout*sin(t); label = 1; };
+border innerCircle(t = 0, 2*pi) { x = Rin*cos(t); y = Rin*sin(t); label = 2; };
+mesh ThAnnulus = buildmesh(outerCircle(5*n) + innerCircle(-3*n));
+plot(ThAnnulus, cmm = "Annulus: negative count for the hole", wait = true);
+
+// 9) Stadium-like domain: line segments and circular arcs can be mixed.
+real L = 2.0;
+real rr = 0.5;
+border lowSeg(t = -L/2, L/2)      { x = t; y = -rr; label = 1; };
+border rightArc(t = -pi/2, pi/2)  { x = L/2 + rr*cos(t); y = rr*sin(t); label = 2; };
+border topSeg(t = L/2, -L/2)      { x = t; y = rr; label = 3; };
+border leftArc(t = pi/2, 3*pi/2)  { x = -L/2 + rr*cos(t); y = rr*sin(t); label = 4; };
+mesh ThStadium = buildmesh(lowSeg(2*n) + rightArc(2*n) + topSeg(2*n) + leftArc(2*n));
+plot(ThStadium, cmm = "Stadium: segments + circular arcs", wait = true);

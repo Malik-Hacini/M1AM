@@ -1,0 +1,36 @@
+verbosity=0;
+
+// Borders
+border bottom(t=0.0,1.0){x=t;y=0.0;label=1;};
+border right(t=0.0,1.0){x=1.0;y=t;label=1;};
+border top(t=1.0,0.0){x=t;y=1.0;label=1;};
+border left(t=1.0,0.0){x=0.0;y=t;label=1;};
+
+// Mesh
+int p=50;
+mesh Omega=buildmesh(bottom(p)+right(p)+top(p)+left(p));
+plot(Omega,wait=true);
+
+// Approximate space
+fespace Vh(Omega,P1);
+
+// Exact solution and second member
+int m=2,n=3;
+func uexact=sin(pi*m*x)*sin(pi*n*y);
+func real f(){
+    return pi^2*(m^2+n^2)*uexact;
+}
+
+// Solve -Delta u=f with Dirichlet boundary conditions
+Vh uh, vh;
+solve poisson(uh,vh)=int2d(Omega)(dx(uh)*dx(vh)+dy(uh)*dy(vh))-int2d(Omega)(f()*vh)+on(1,uh=0);
+plot(uh,wait=true,value=true,fill=true);
+
+// Comparison with the exact solution
+Vh u, err;
+u=uexact;
+err=abs(u-uh);
+
+plot(err,wait=true,value=true,fill=true);
+cout<< "error L^infinity: "<<err[].max<<endl;
+
