@@ -5,13 +5,21 @@ import timeit
 
 def GD(f, grad_f, x_init, tau, iterMax, prec):
 
+<<<<<<< HEAD
     epsilon = prec*np.linalg.norm(grad_f(x_init))
+=======
+    epsilon = prec*np.linalg.norm(f_grad(x_init))
+>>>>>>> 789dfcf (add opti tp)
 
     x = np.copy(x_init)
     x_tab = np.copy(x_init)
 
 
+<<<<<<< HEAD
     print("GD with constant step size")
+=======
+    print("------------------------------------\n GD with constant step size\n------------------------------------\nSTART")
+>>>>>>> 789dfcf (add opti tp)
     t_s =  timeit.default_timer()
 
     for k in range(iterMax):
@@ -44,7 +52,11 @@ def SGD(f, grad_f_subsampling, x_init, tau0, schedule, iterMax):
     x_sum = np.zeros(len(x_init))
     tau_sum = 0.0
 
+<<<<<<< HEAD
     print("Stochastic gradient descent")
+=======
+    print("------------------------------------\n Stochastic gradient descent \n------------------------------------\nSTART")
+>>>>>>> 789dfcf (add opti tp)
     t_s =  timeit.default_timer()
 
     for k in range(iterMax):
@@ -52,6 +64,7 @@ def SGD(f, grad_f_subsampling, x_init, tau0, schedule, iterMax):
         if schedule == "decreasing":
             tau = 1 / (k+1)
 
+<<<<<<< HEAD
         g = grad_f_subsampling(x)
         x_new = x - tau*g
 
@@ -63,6 +76,9 @@ def SGD(f, grad_f_subsampling, x_init, tau0, schedule, iterMax):
         x_avg_tab = np.vstack((x_avg_tab,x_avg))
 
         x = x_new
+=======
+        # TO COMPLETE
+>>>>>>> 789dfcf (add opti tp)
 
 
     t_e =  timeit.default_timer()
@@ -71,3 +87,8 @@ def SGD(f, grad_f_subsampling, x_init, tau0, schedule, iterMax):
     return x,x_tab,x_avg, x_avg_tab
 
 
+<<<<<<< HEAD
+=======
+
+
+>>>>>>> 789dfcf (add opti tp)

@@ -14,6 +14,7 @@ def u_from_x(x):
     return u
 
 def cumulated_catch(u):
+<<<<<<< HEAD
     return sum([np.exp(-alpha*t)*u[t] for t in range(T)])
 
 discount = np.exp(-alpha*np.arange(T))
@@ -65,6 +66,13 @@ def proj(x):
         y = proj_control(y, t)
     y = proj_catch(y)
     return y
+=======
+    return sum([np.exp(-0.1*t)*u[t] for t in range(T)])
+
+### TO BE COMPLETED
+
+
+>>>>>>> 789dfcf (add opti tp)
 
 
 

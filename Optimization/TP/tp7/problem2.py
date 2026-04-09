@@ -12,6 +12,10 @@ def f(x):
 def grad_f(x):
     return 2*A@x
 
+<<<<<<< HEAD
 def proj(x):
     nrm = np.linalg.norm(x)
     return np.copy(x) if nrm == 0 else x/nrm
+=======
+### TO BE COMPLETED
+>>>>>>> 789dfcf (add opti tp)

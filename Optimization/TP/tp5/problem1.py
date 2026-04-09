@@ -65,6 +65,7 @@ def grad_f(x):
 
 
 def grad_f_subsampling(x):
+<<<<<<< HEAD
     g = np.zeros(n)
     i = np.random.randint(0,A.shape[0])
 
@@ -74,6 +75,10 @@ def grad_f_subsampling(x):
         g += A[i]/( 1 + np.exp(-np.dot( A[i] , x ) ) )
 
     return g + lam*x
+=======
+    
+    # TO BE COMPLETED
+>>>>>>> 789dfcf (add opti tp)
 
 
 
@@ -129,4 +134,8 @@ def prediction_test(w,PRINT):
                 correct = "False"
             if PRINT:
                 print("True class: {:d} \t-- Predicted: {} \t(confidence: {:.1f}%)\t{}".format(int(b[i]),-1,100-(0.5-p)*200,correct))
+<<<<<<< HEAD
     return pred,float(perf)/A_test.shape[0]
+=======
+    return pred,float(perf)/A_test.shape[0]
+>>>>>>> 789dfcf (add opti tp)

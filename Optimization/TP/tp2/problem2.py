@@ -7,6 +7,10 @@ def f(x):
 
 
 
+<<<<<<< HEAD
+=======
+### TO DO: IMPLEMENT FIRST-ORDER AND SECOND-ORDER oracles
+>>>>>>> 789dfcf (add opti tp)
 def grad_f(x):
     x1 = x[0]
     x2 = x[1]
@@ -15,14 +19,22 @@ def grad_f(x):
     return np.array([g1,g2])
 
 
+<<<<<<< HEAD
 def hessian_f(x):
     x1 = x[0]
     x2 = x[1]
     return np.array([[1200*x1**2 - 400*x2 + 2, -400*x1], [-400*x1, 200]])
 
 
+=======
+>>>>>>> 789dfcf (add opti tp)
 # useful constants for plotting
 lb = -5.0
 ub = 5.0
 nb_points = 500
 levels = [0.0, 5.0, 50.0, 300.0, 800.0]
+<<<<<<< HEAD
+=======
+
+
+>>>>>>> 789dfcf (add opti tp)

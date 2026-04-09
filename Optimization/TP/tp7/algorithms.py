@@ -9,11 +9,16 @@ def proj_GD(f, grad_f, proj, x_init, tau, iterMax, prec):
     x = np.copy(x_init)
     x_tab = np.copy(x_init)
 
+<<<<<<< HEAD
     print("Projected GD")
+=======
+    print("------------------------------------\n GD with constant step size\n------------------------------------\nSTART")
+>>>>>>> 789dfcf (add opti tp)
     t_s =  timeit.default_timer()
 
     for k in range(iterMax):
 
+<<<<<<< HEAD
         x_new = proj(x - tau*grad_f(x))
         step = np.linalg.norm(x_new - x)
         x = x_new
@@ -21,6 +26,13 @@ def proj_GD(f, grad_f, proj, x_init, tau, iterMax, prec):
         x_tab = np.vstack((x_tab,x))
 
         if step < epsilon:
+=======
+        # TO BE COMPLETED
+
+        x_tab = np.vstack((x_tab,x))
+
+        if ### TO BE COMPLETED
+>>>>>>> 789dfcf (add opti tp)
             break
 
     t_e =  timeit.default_timer()
@@ -35,7 +47,11 @@ def POCS(proj, x_init, iterMax):
     x = np.copy(x_init)
     x_tab = np.copy(x_init)
 
+<<<<<<< HEAD
     print("POCS")
+=======
+    print("------------------------------------\n POCS \n------------------------------------\nSTART")
+>>>>>>> 789dfcf (add opti tp)
     t_s =  timeit.default_timer()
 
     for k in range(iterMax):
@@ -48,3 +64,7 @@ def POCS(proj, x_init, iterMax):
     print("FINISHED -- {:d} iterations -- {:.6f}s \n\n".format(k,t_e-t_s))
     
     return x,x_tab
+<<<<<<< HEAD
+=======
+
+>>>>>>> 789dfcf (add opti tp)
