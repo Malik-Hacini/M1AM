@@ -1,0 +1,64 @@
+// exercise 1
+// q4
+verbosity = 0;
+
+real bcoef = 2.0;
+real cDir = 2.0;
+real kappa = 0.5;
+
+int n = 40;
+
+border bottom(t = 0.0, 5.0) { x = t; y = -2.0; label = 2; };
+border right(t = -2.0, 2.0) { x = 5.0; y = t; label = 1; };
+border top(t = 5.0, 0.0)    { x = t; y = 2.0; label = 2; };
+border left(t = 2.0, -2.0)  { x = 0.0; y = t; label = 1; };
+
+mesh Th = buildmesh(bottom(n) + right(n) + top(n) + left(n));
+plot(Th, cmm = "Mesh on Omega", wait = true);
+
+fespace Vh(Th, P1);
+Vh uh, vh;
+
+func uExact  = cDir + sin(pi*x/5.0)*cos(pi*y/2.0);
+func uxExact = (pi/5.0)*cos(pi*x/5.0)*cos(pi*y/2.0);
+func uyExact = -(pi/2.0)*sin(pi*x/5.0)*sin(pi*y/2.0);
+
+real ax = pi/5.0;
+real ay = pi/2.0;
+real modeCoeff = kappa*(ax^2 + ay^2) + bcoef;
+func rhs = bcoef*cDir + modeCoeff*sin(pi*x/5.0)*cos(pi*y/2.0);
+
+problem poisson(uh, vh)
+    = int2d(Th)(kappa*(dx(uh)*dx(vh) + dy(uh)*dy(vh)) + bcoef*uh*vh)
+    - int2d(Th)(rhs*vh)
+    + on(1,uh = cDir);
+
+poisson;
+
+plot(uh, wait = true, value = true, fill = true);
+
+real H1error = sqrt(
+    int2d(Th)(
+        (uh - uExact)^2
+      + (dx(uh) - uxExact)^2
+      + (dy(uh) - uyExact)^2
+    )
+);
+
+cout << "H1 error = " << H1error << endl;
+
+// q6
+Vh uh6, vh6, kappaH;
+
+func kappaVar = ((x > 1.0) && (x < 4.0) && (y > -1.0) && (y < 1.0)) ? 50.0 : 0.5;
+kappaH = kappaVar;
+
+problem poissonVar(uh6, vh6)
+    = int2d(Th)(kappaVar*(dx(uh6)*dx(vh6) + dy(uh6)*dy(vh6)) + bcoef*uh6*vh6)
+    - int2d(Th)(rhs*vh6)
+    + on(1, uh6 = cDir);
+
+poissonVar;
+
+plot(kappaH, cmm = "Variable coefficient kappa", wait = true, value = true, fill = true);
+plot(uh6, cmm = "Solution with variable kappa", wait = true, value = true, fill = true);

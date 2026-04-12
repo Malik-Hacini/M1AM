@@ -1,0 +1,36 @@
+verbosity = 0;
+
+real vx = 1.0;
+real vy = 0.0;
+
+int nOuter = 30;
+int nInner = 12;
+
+border bottom(t = 0.0, 1.0) { x = t;   y = 0.0; label = 1; };
+border right(t = 0.0, 1.0)  { x = 1.0; y = t;   label = 1; };
+border top(t = 1.0, 0.0)    { x = t;   y = 1.0; label = 1; };
+border left(t = 1.0, 0.0)   { x = 0.0; y = t;   label = 1; };
+
+real xL = 0.35, xC = 0.50, xR = 0.65;
+real yB = 0.35, yC = 0.50, yT = 0.65;
+border d1(t = 0.0, 1.0) { x = xC + t*(xR - xC); y = yT + t*(yC - yT); label = 2; };
+border d2(t = 0.0, 1.0) { x = xR + t*(xC - xR); y = yC + t*(yB - yC); label = 2; };
+border d3(t = 0.0, 1.0) { x = xC + t*(xL - xC); y = yB + t*(yC - yB); label = 2; };
+border d4(t = 0.0, 1.0) { x = xL + t*(xC - xL); y = yC + t*(yT - yC); label = 2; };
+
+mesh Th = buildmesh(bottom(nOuter) + right(nOuter) + top(nOuter) + left(nOuter)
+                  + d1(nInner) + d2(nInner) + d3(nInner) + d4(nInner));
+
+plot(Th, cmm = "Mesh of Omega minus D", wait = true);
+
+fespace Vh(Th, P1);
+Vh psi, phi;
+
+problem streamFunction(psi, phi)
+    = int2d(Th)(dx(psi)*dx(phi) + dy(psi)*dy(phi))
+    - int1d(Th, 1)((-vy*N.x + vx*N.y)*phi)
+    + on(2, psi = 0);
+
+streamFunction;
+
+plot(psi, cmm = "Stream function psi", wait = true, fill = false, nbiso = 25, value = true);
