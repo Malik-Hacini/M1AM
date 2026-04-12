@@ -5,7 +5,7 @@ import timeit
 
 def GD(f, grad_f, x_init, tau, iterMax, prec):
 
-    epsilon = prec*np.linalg.norm(f_grad(x_init))
+    epsilon = prec*np.linalg.norm(grad_f(x_init))
 
     x = np.copy(x_init)
     x_tab = np.copy(x_init)
@@ -52,14 +52,23 @@ def SGD(f, grad_f_subsampling, x_init, tau0, schedule, iterMax):
         if schedule == "decreasing":
             tau = 1 / (k+1)
 
-        # TO COMPLETE
+        g = grad_f_subsampling(x)
+        x_new = x - tau*g
+
+        x_tab = np.vstack((x_tab,x_new))
+
+        x_sum = x_sum + tau*x
+        tau_sum = tau_sum + tau
+        x_avg = (1 / tau_sum)*x_sum
+        x_avg_tab = np.vstack((x_avg_tab,x_avg))
+
+        x = x_new
 
 
     t_e =  timeit.default_timer()
     print("FINISHED -- {:d} iterations -- {:.6f}s -- final value: {:f}\n\n".format(k,t_e-t_s,f(x_avg)))
     
     return x,x_tab,x_avg, x_avg_tab
-
 
 
 

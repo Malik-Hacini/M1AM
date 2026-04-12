@@ -15,7 +15,10 @@ def hessian_f(x):
     return np.array([[1.5, 1.5], [1.5, 3.0]])
 
 
-### TO BE COMPLETED
+def proj(x):
+    if np.inner(v,x) <= w:
+        return np.copy(x)
+    return x - (np.inner(v,x) - w)*v/np.inner(v,v)
 
 # Description of the half-space
 v = np.array([1.0, 0.0])

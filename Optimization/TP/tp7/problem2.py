@@ -12,4 +12,6 @@ def f(x):
 def grad_f(x):
     return 2*A@x
 
-### TO BE COMPLETED
+def proj(x):
+    nrm = np.linalg.norm(x)
+    return np.copy(x) if nrm == 0 else x/nrm

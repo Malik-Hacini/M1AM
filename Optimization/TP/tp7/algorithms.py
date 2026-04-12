@@ -14,11 +14,13 @@ def proj_GD(f, grad_f, proj, x_init, tau, iterMax, prec):
 
     for k in range(iterMax):
 
-        # TO BE COMPLETED
+        x_new = proj(x - tau*grad_f(x))
+        step = np.linalg.norm(x_new - x)
+        x = x_new
 
         x_tab = np.vstack((x_tab,x))
 
-        if ### TO BE COMPLETED
+        if step < epsilon:
             break
 
     t_e =  timeit.default_timer()
@@ -46,4 +48,3 @@ def POCS(proj, x_init, iterMax):
     print("FINISHED -- {:d} iterations -- {:.6f}s \n\n".format(k,t_e-t_s))
     
     return x,x_tab
-

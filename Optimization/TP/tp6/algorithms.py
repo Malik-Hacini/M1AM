@@ -5,7 +5,7 @@ import timeit
 
 def GD(f, grad_f, x_init, tau, iterMax, prec):
 
-    epsilon = prec*np.linalg.norm(f_grad(x_init))
+    epsilon = prec*np.linalg.norm(grad_f(x_init))
 
     x = np.copy(x_init)
     x_tab = np.copy(x_init)
@@ -79,14 +79,16 @@ def adagrad_norm(f, grad_f_subsampling, x_init, tau, b_sq, iterMax):
     x_tab = np.copy(x)
     
 
-    ### TO BE COMPLETED
+    G = np.copy(b_sq)
 
     print("------------------------------------\n Adagrad-norm \n------------------------------------\nSTART")
     t_s =  timeit.default_timer()
 
     for k in range(iterMax):
 
-        ### TO BE COMPLETED
+        g = grad_f_subsampling(x)
+        G = G + np.linalg.norm(g)**2
+        x = x - tau*g/np.sqrt(G)
 
         x_tab = np.vstack((x_tab,x))
 
@@ -102,14 +104,16 @@ def adagrad_diag(f, grad_f_subsampling, x_init, tau, b_sq, iterMax):
     x = np.copy(x_init)
     x_tab = np.copy(x)
     
-    ### TO BE COMPLETED
+    G = b_sq*np.ones(len(x_init))
 
     print("------------------------------------\n Adagrad \n------------------------------------\nSTART")
     t_s =  timeit.default_timer()
 
     for k in range(iterMax):
 
-        ### TO BE COMPLETED
+        g = grad_f_subsampling(x)
+        G = G + g**2
+        x = x - tau*g/np.sqrt(G)
 
         x_tab = np.vstack((x_tab,x))
 
@@ -125,14 +129,20 @@ def adam(f, grad_f_subsampling, x_init, tau, beta1, beta2, delta, iterMax):
     x = np.copy(x_init)
     x_tab = np.copy(x)
 
-    ### TO BE COMPLETED
+    m = np.zeros(len(x_init))
+    v = np.zeros(len(x_init))
 
     print("------------------------------------\n Adam \n------------------------------------\nSTART")
     t_s =  timeit.default_timer()
 
     for k in range(iterMax):
 
-        ### TO BE COMPLETED
+        g = grad_f_subsampling(x)
+        m = beta1*m + (1-beta1)*g
+        v = beta2*v + (1-beta2)*(g**2)
+        m_hat = m/(1-beta1**(k+1))
+        v_hat = v/(1-beta2**(k+1))
+        x = x - tau*m_hat/np.sqrt(delta + v_hat)
 
         x_tab = np.vstack((x_tab,x))
 

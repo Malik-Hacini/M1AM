@@ -65,8 +65,15 @@ def grad_f(x):
 
 
 def grad_f_subsampling(x):
-    
-    # TO BE COMPLETED
+    g = np.zeros(n)
+    i = np.random.randint(0,A.shape[0])
+
+    if b[i] > 0:
+        g += -A[i]/( 1 + np.exp(np.dot( A[i] , x ) ) )
+    else:
+        g += A[i]/( 1 + np.exp(-np.dot( A[i] , x ) ) )
+
+    return g + lam*x
 
 
 
