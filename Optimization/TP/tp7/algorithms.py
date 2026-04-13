@@ -9,7 +9,7 @@ def proj_GD(f, grad_f, proj, x_init, tau, iterMax, prec):
     x = np.copy(x_init)
     x_tab = np.copy(x_init)
 
-    print("------------------------------------\n GD with constant step size\n------------------------------------\nSTART")
+    print("Projected GD")
     t_s =  timeit.default_timer()
 
     for k in range(iterMax):
@@ -35,7 +35,7 @@ def POCS(proj, x_init, iterMax):
     x = np.copy(x_init)
     x_tab = np.copy(x_init)
 
-    print("------------------------------------\n POCS \n------------------------------------\nSTART")
+    print("POCS")
     t_s =  timeit.default_timer()
 
     for k in range(iterMax):

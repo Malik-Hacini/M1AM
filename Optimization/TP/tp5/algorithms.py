@@ -11,7 +11,7 @@ def GD(f, grad_f, x_init, tau, iterMax, prec):
     x_tab = np.copy(x_init)
 
 
-    print("------------------------------------\n GD with constant step size\n------------------------------------\nSTART")
+    print("GD with constant step size")
     t_s =  timeit.default_timer()
 
     for k in range(iterMax):
@@ -44,7 +44,7 @@ def SGD(f, grad_f_subsampling, x_init, tau0, schedule, iterMax):
     x_sum = np.zeros(len(x_init))
     tau_sum = 0.0
 
-    print("------------------------------------\n Stochastic gradient descent \n------------------------------------\nSTART")
+    print("Stochastic gradient descent")
     t_s =  timeit.default_timer()
 
     for k in range(iterMax):
@@ -69,6 +69,5 @@ def SGD(f, grad_f_subsampling, x_init, tau0, schedule, iterMax):
     print("FINISHED -- {:d} iterations -- {:.6f}s -- final value: {:f}\n\n".format(k,t_e-t_s,f(x_avg)))
     
     return x,x_tab,x_avg, x_avg_tab
-
 
 

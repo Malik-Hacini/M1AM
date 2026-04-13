@@ -11,7 +11,7 @@ def GD(f, grad_f, x_init, tau, iterMax, prec):
     x_tab = np.copy(x_init)
 
 
-    print("------------------------------------\n GD with constant step size\n------------------------------------\nSTART")
+    print("GD with constant step size")
     t_s =  timeit.default_timer()
 
     for k in range(iterMax):
@@ -43,7 +43,7 @@ def SGD(f, grad_f_subsampling, x_init, tau0, schedule, iterMax):
     x_sum = np.zeros(len(x_init))
     tau_sum = 0.0
 
-    print("------------------------------------\n Stochastic gradient descent \n------------------------------------\nSTART")
+    print("Stochastic gradient descent")
     t_s =  timeit.default_timer()
 
     for k in range(iterMax):
@@ -81,7 +81,7 @@ def adagrad_norm(f, grad_f_subsampling, x_init, tau, b_sq, iterMax):
 
     G = np.copy(b_sq)
 
-    print("------------------------------------\n Adagrad-norm \n------------------------------------\nSTART")
+    print("Adagrad-norm")
     t_s =  timeit.default_timer()
 
     for k in range(iterMax):
@@ -106,7 +106,7 @@ def adagrad_diag(f, grad_f_subsampling, x_init, tau, b_sq, iterMax):
     
     G = b_sq*np.ones(len(x_init))
 
-    print("------------------------------------\n Adagrad \n------------------------------------\nSTART")
+    print("Adagrad")
     t_s =  timeit.default_timer()
 
     for k in range(iterMax):
@@ -132,7 +132,7 @@ def adam(f, grad_f_subsampling, x_init, tau, beta1, beta2, delta, iterMax):
     m = np.zeros(len(x_init))
     v = np.zeros(len(x_init))
 
-    print("------------------------------------\n Adam \n------------------------------------\nSTART")
+    print("Adam")
     t_s =  timeit.default_timer()
 
     for k in range(iterMax):

@@ -11,7 +11,7 @@ def GD_wolfe(f , f_grad , x_init , prec, iterMax):
     epsilon = prec*np.linalg.norm(f_grad(x_init) )
     x_tab = np.copy(x)
 
-    print("------------------------------------\n Gradient with Wolfe line search\n------------------------------------\nSTART")
+    print("Gradient with Wolfe line search")
     t_s =  timeit.default_timer()
 
     for k in range(iterMax):
@@ -42,7 +42,7 @@ def GD(f, f_grad, x_init, tau, iterMax, prec):
     x_tab = np.copy(x_init)
 
 
-    print("------------------------------------\n GD with constant step size\n------------------------------------\nSTART")
+    print("GD with constant step size")
     t_s =  timeit.default_timer()
 
     for k in range(iterMax):
@@ -76,7 +76,7 @@ def GD_accelerated(f, grad_f, x_init, tau, iterMax, prec, c=0.5):
     lmbd = 0.0
 
 
-    print("------------------------------------\n Accelerated GD with constant step size\n------------------------------------\nSTART")
+    print("Accelerated GD with constant step size")
     t_s =  timeit.default_timer()
 
     for k in range(iterMax):
@@ -110,7 +110,7 @@ def CG_quadratic(A, b, f, grad_f, x_init, iterMax, prec):
     r = -(A@x + b)
     d = r
 
-    print("------------------------------------\n CG for quadratic objective \n------------------------------------\nSTART")
+    print("CG for quadratic objective")
     t_s =  timeit.default_timer()
 
     for k in range(iterMax):
@@ -144,7 +144,7 @@ def CG_nonLinear(f, grad_f, x_init, iterMax, prec, tau0, rho, c):
     r = -grad_f(x)
     d = r
 
-    print("------------------------------------\n CG for quadratic objective \n------------------------------------\nSTART")
+    print("CG for quadratic objective")
     t_s =  timeit.default_timer()
 
     for k in range(iterMax):

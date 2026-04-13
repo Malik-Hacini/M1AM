@@ -10,7 +10,7 @@ def GD(f, grad_f, x_init, tau, iterMax, prec):
     x_tab = np.copy(x_init)
 
 
-    print("------------------------------------\n GD with constant step size\n------------------------------------\nSTART")
+    print("GD with constant step size")
     t_s =  timeit.default_timer()
 
     for k in range(iterMax):
@@ -36,7 +36,7 @@ def GD_backtracking(f, grad_f, x_init, tau0, rho, c, iterMax, prec):
     x = np.copy(x_init)
     x_tab = np.copy(x_init)
 
-    print("------------------------------------\n GD with backtracking line search\n------------------------------------\nSTART")
+    print("GD with backtracking line search")
     t_s = timeit.default_timer()
 
     for k in range(iterMax):
@@ -65,7 +65,7 @@ def GD_exact(A, f, grad_f, x_init, iterMax, prec):
     x = np.copy(x_init)
     x_tab = np.copy(x_init)
 
-    print("------------------------------------\n GD with exact line search\n------------------------------------\nSTART")
+    print("GD with exact line search")
     t_s = timeit.default_timer()
 
     for k in range(iterMax):
@@ -82,6 +82,5 @@ def GD_exact(A, f, grad_f, x_init, iterMax, prec):
     print("FINISHED -- {:d} iterations -- {:.6f}s -- final value: {:f} -- final gradient norm: {:f} \n\n".format(k,t_e-t_s,f(x),np.linalg.norm(grad_f(x))))
 
     return x,x_tab
-
 
 

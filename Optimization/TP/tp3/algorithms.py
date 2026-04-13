@@ -15,7 +15,7 @@ def GD(f, f_grad, x_init, tau, iterMax, prec):
     x_tab = np.copy(x_init)
 
 
-    print("------------------------------------\n GD with constant step size\n------------------------------------\nSTART")
+    print("GD with constant step size")
     t_s =  timeit.default_timer()
 
     for k in range(iterMax):
@@ -52,7 +52,7 @@ def GD_wolfe(f , f_grad , x_init , prec, iterMax):
     epsilon = prec*np.linalg.norm(f_grad(x_init) )
     x_tab = np.copy(x)
 
-    print("------------------------------------\n Gradient with Wolfe line search\n------------------------------------\nSTART")
+    print("Gradient with Wolfe line search")
     t_s =  timeit.default_timer()
 
     for k in range(iterMax):
@@ -85,7 +85,7 @@ def newton(f , f_grad_hessian , x_init , prec , iterMax ):
     epsilon = prec*np.linalg.norm(g)
 
     x_tab = np.copy(x)
-    print("------------------------------------\nNewton's algorithm\n------------------------------------\nSTART")
+    print("Newton's algorithm")
     t_s =  timeit.default_timer()
     for k in range(iterMax):
 
@@ -119,7 +119,7 @@ def bfgs(f , f_grad , x_init , prec , iterMax ):
     W = np.copy(I)
 
     x_tab = np.copy(x)
-    print("------------------------------------\nBFGS algorithm\n------------------------------------\nSTART")
+    print("BFGS algorithm")
     t_s =  timeit.default_timer()
 
     for k in range(iterMax):
@@ -162,7 +162,7 @@ def newton_wolfe(f , f_grad_hessian , x_init , prec , iterMax ):
         return f_grad_hessian(x)[0]
 
     x_tab = np.copy(x)
-    print("------------------------------------\nNewton's algorithm with Wolfe line search\n------------------------------------\nSTART")
+    print("Newton's algorithm with Wolfe line search")
     t_s =  timeit.default_timer()
     for k in range(iterMax):
 
@@ -183,6 +183,5 @@ def newton_wolfe(f , f_grad_hessian , x_init , prec , iterMax ):
     t_e =  timeit.default_timer()
     print("FINISHED -- {:d} iterations -- {:.6f}s -- final value: {:f} -- final gradient norm: {:f} \n\n".format(k,t_e-t_s,f(x),np.linalg.norm(f_grad(x))))
     return x,x_tab
-
 
 
