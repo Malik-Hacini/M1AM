@@ -1,0 +1,76 @@
+verbosity = 0;
+
+real mu = 5.0;
+real lambda = 10.0;
+
+real f1 = 0.0;
+real f2 = -1.0;
+
+real g1 = 0.0;
+real g2 = 0.0;
+
+int nx = 50;
+int ny = 10;
+
+border bottom(t = 0.0, 5.0) { x = t;   y = 0.0; label = 1; };
+border right(t = 0.0, 1.0)  { x = 5.0; y = t;   label = 2; };
+border top(t = 5.0, 0.0)    { x = t;   y = 1.0; label = 3; };
+border left(t = 1.0, 0.0)   { x = 0.0; y = t;   label = 4; };
+
+mesh Th = buildmesh(bottom(nx) + right(ny) + top(nx) + left(ny));
+plot(Th, cmm = "Beam mesh", wait = true);
+
+fespace Vh(Th, P1);
+Vh u1, u2, v1, v2;
+Vh sigma11, sigma12, sigma22, sigmaF;
+
+problem elasticity([u1, u2], [v1, v2])
+    = int2d(Th)(
+          2.0*mu*(dx(u1)*dx(v1) + dy(u2)*dy(v2))
+        + mu*(dy(u1) + dx(u2))*(dy(v1) + dx(v2))
+        + lambda*(dx(u1) + dy(u2))*(dx(v1) + dy(v2))
+      )
+    - int2d(Th)(f1*v1 + f2*v2)
+    - int1d(Th, 1, 2, 3)(g1*v1 + g2*v2)
+    + on(4, u1 = 0.0, u2 = 0.0);
+
+elasticity;
+
+sigma11 = 2.0*mu*dx(u1) + lambda*(dx(u1) + dy(u2));
+sigma12 = mu*(dy(u1) + dx(u2));
+sigma22 = 2.0*mu*dy(u2) + lambda*(dx(u1) + dy(u2));
+sigmaF = sqrt(sigma11*sigma11 + 2.0*sigma12*sigma12 + sigma22*sigma22);
+
+cout << "min(u1) = " << u1[].min << ", max(u1) = " << u1[].max << endl;
+cout << "min(u2) = " << u2[].min << ", max(u2) = " << u2[].max << endl;
+
+plot(u1, cmm = "Horizontal displacement u1", wait = true, value = true, fill = true);
+plot(u2, cmm = "Vertical displacement u2", wait = true, value = true, fill = true);
+plot([u1, u2], cmm = "Displacement field u", coef = 0.01, wait = true);
+plot(sigmaF, cmm = "Frobenius norm of stress", wait = true, value = true, fill = true);
+
+real coef2 = 0.05;
+mesh Thnew = movemesh(Th, [x + coef2*u1, y + coef2*u2]);
+plot(Thnew, cmm = "Deformed mesh", wait = true);
+
+int nv0 = Th.nv;
+int nt0 = Th.nt;
+
+real adaptTol = 0.02;
+Th = adaptmesh(Th, sigmaF, err = adaptTol);
+plot(Th, cmm = "Adapted mesh from stress norm", wait = true);
+
+elasticity;
+
+sigma11 = 2.0*mu*dx(u1) + lambda*(dx(u1) + dy(u2));
+sigma12 = mu*(dy(u1) + dx(u2));
+sigma22 = 2.0*mu*dy(u2) + lambda*(dx(u1) + dy(u2));
+sigmaF = sqrt(sigma11*sigma11 + 2.0*sigma12*sigma12 + sigma22*sigma22);
+
+cout << "initial mesh: nv = " << nv0 << ", nt = " << nt0 << endl;
+cout << "adapted mesh: nv = " << Th.nv << ", nt = " << Th.nt << endl;
+
+plot(sigmaF, cmm = "Frobenius norm on adapted mesh", wait = true, value = true, fill = true);
+
+mesh ThAdaptNew = movemesh(Th, [x + coef2*u1, y + coef2*u2]);
+plot(ThAdaptNew, cmm = "Deformed adapted mesh", wait = true);
