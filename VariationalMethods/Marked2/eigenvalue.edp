@@ -1,0 +1,51 @@
+verbosity=0;
+
+mesh Th=square(150,50,[3*x,y-0.5]);
+fespace Vh(Th,P1);
+
+real c=0.0;
+Vh u, v;
+varf a(u,v)=int2d(Th)( dx(u)*dx(v) + dy(u)*dy(v) + u*v )+on(2,4,u=c);
+matrix A=a(Vh,Vh);
+varf b(u,v)=int2d(Th)(u*v);
+matrix B=b(Vh,Vh);
+
+int nev=5;
+real[int] eigenvalues(nev);
+Vh[int] eigenvectors(nev);
+EigenValue(A,B,value=eigenvalues,vector=eigenvectors);
+
+// Eigenvalues
+for (int i=0;i<nev;i++){
+    cout << "E[" << i << "] = " << eigenvalues[i] << endl;
+}
+
+// Eigenvectors
+for (int i=0;i<nev;i++){
+    plot(eigenvectors[i],fill=true,wait=true,value=true);
+}
+
+int[int] m(nev), n(nev);
+m=[1,2,3,1,2];
+n=[0,0,0,1,1];
+
+Vh uh, uex;
+
+real normh, norme, s, err;
+
+for (int i=0;i<nev;i++){
+    uh=eigenvectors[i];
+
+    normh=sqrt(int2d(Th)(uh^2));
+    uh=uh/normh;
+
+    uex=sin(m[i]*pi*x/3.0)*cos(n[i]*pi*(y+0.5));
+    norme=sqrt(int2d(Th)(uex^2));
+    uex=uex/norme;
+
+    s=int2d(Th)(uh*uex);
+    if (s<0) uh=-uh;
+    err=sqrt(int2d(Th)((uh-uex)^2));
+
+    cout << "L2 error " << i << " = " << err << endl;
+}
