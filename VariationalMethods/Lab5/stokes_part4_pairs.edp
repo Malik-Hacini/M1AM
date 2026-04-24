@@ -1,0 +1,157 @@
+verbosity = 0;
+
+real nu = 1.0;
+real f1 = 0.0;
+real f2 = 0.0;
+
+int n = 16;
+int nRef = 48;
+
+mesh Th = square(n, n);
+mesh ThRef = square(nRef, nRef);
+
+// Reference Taylor-Hood solution on a finer structured mesh.
+fespace XhRef(ThRef, [P2, P2, P1]);
+XhRef [u1Ref, u2Ref, pRef], [v1Ref, v2Ref, qRef];
+
+varf StokesRef([u1Ref, u2Ref, pRef], [v1Ref, v2Ref, qRef])
+    = int2d(ThRef)(
+          nu*(dx(u1Ref)*dx(v1Ref) + dy(u1Ref)*dy(v1Ref)
+             + dx(u2Ref)*dx(v2Ref) + dy(u2Ref)*dy(v2Ref))
+        - pRef*(dx(v1Ref) + dy(v2Ref))
+        + qRef*(dx(u1Ref) + dy(u2Ref))
+      )
+    - int2d(ThRef)(f1*v1Ref + f2*v2Ref)
+    + on(1, 2, 4, u1Ref = 0.0, u2Ref = 0.0)
+    + on(3, u1Ref = x^2, u2Ref = 0.0);
+
+varf MeanRef([u1Ref, u2Ref, pRef], [v1Ref, v2Ref, qRef]) = int2d(ThRef)(qRef);
+
+matrix ARef = StokesRef(XhRef, XhRef);
+real[int] bRef = StokesRef(0, XhRef);
+real[int] CRef = MeanRef(0, XhRef);
+matrix AARef = [[ARef, CRef], [CRef', 0]];
+set(AARef, solver = sparsesolver);
+
+real[int] b0Ref(1), bbRef(XhRef.ndof + 1), solRef(XhRef.ndof + 1);
+b0Ref = 0.0;
+bbRef = [bRef, b0Ref];
+solRef = AARef^-1 * bbRef;
+u1Ref[] = solRef(0 : XhRef.ndof - 1);
+
+cout << "Reference: mean(p) = " << int2d(ThRef)(pRef)
+     << ", divL2 = " << sqrt(int2d(ThRef)((dx(u1Ref) + dy(u2Ref))^2)) << endl;
+
+// P1 / P1
+fespace Xh11(Th, [P1, P1, P1]);
+Xh11 [u111, u211, p11], [v111, v211, q11];
+
+varf Stokes11([u111, u211, p11], [v111, v211, q11])
+    = int2d(Th)(
+          nu*(dx(u111)*dx(v111) + dy(u111)*dy(v111)
+             + dx(u211)*dx(v211) + dy(u211)*dy(v211))
+        - p11*(dx(v111) + dy(v211))
+        + q11*(dx(u111) + dy(u211))
+      )
+    - int2d(Th)(f1*v111 + f2*v211)
+    + on(1, 2, 4, u111 = 0.0, u211 = 0.0)
+    + on(3, u111 = x^2, u211 = 0.0);
+
+varf Mean11([u111, u211, p11], [v111, v211, q11]) = int2d(Th)(q11);
+
+matrix A11 = Stokes11(Xh11, Xh11);
+real[int] b11 = Stokes11(0, Xh11);
+real[int] C11 = Mean11(0, Xh11);
+matrix AA11 = [[A11, C11], [C11', 0]];
+set(AA11, solver = sparsesolver);
+
+real[int] b011(1), bb11(Xh11.ndof + 1), sol11(Xh11.ndof + 1);
+b011 = 0.0;
+bb11 = [b11, b011];
+sol11 = AA11^-1 * bb11;
+u111[] = sol11(0 : Xh11.ndof - 1);
+
+real div11 = sqrt(int2d(Th)((dx(u111) + dy(u211))^2));
+real errU11 = sqrt(int2d(ThRef)((u111 - u1Ref)^2 + (u211 - u2Ref)^2));
+real errP11 = sqrt(int2d(ThRef)((p11 - pRef)^2));
+
+cout << "P1/P1: mean(p) = " << int2d(Th)(p11)
+     << ", divL2 = " << div11
+     << ", errU = " << errU11
+     << ", errP = " << errP11 << endl;
+
+// P1 / P0
+fespace Xh10(Th, [P1, P1, P0]);
+Xh10 [u110, u210, p10], [v110, v210, q10];
+
+varf Stokes10([u110, u210, p10], [v110, v210, q10])
+    = int2d(Th)(
+          nu*(dx(u110)*dx(v110) + dy(u110)*dy(v110)
+             + dx(u210)*dx(v210) + dy(u210)*dy(v210))
+        - p10*(dx(v110) + dy(v210))
+        + q10*(dx(u110) + dy(u210))
+      )
+    - int2d(Th)(f1*v110 + f2*v210)
+    + on(1, 2, 4, u110 = 0.0, u210 = 0.0)
+    + on(3, u110 = x^2, u210 = 0.0);
+
+varf Mean10([u110, u210, p10], [v110, v210, q10]) = int2d(Th)(q10);
+
+matrix A10 = Stokes10(Xh10, Xh10);
+real[int] b10 = Stokes10(0, Xh10);
+real[int] C10 = Mean10(0, Xh10);
+matrix AA10 = [[A10, C10], [C10', 0]];
+set(AA10, solver = sparsesolver);
+
+real[int] b010(1), bb10(Xh10.ndof + 1), sol10(Xh10.ndof + 1);
+b010 = 0.0;
+bb10 = [b10, b010];
+sol10 = AA10^-1 * bb10;
+u110[] = sol10(0 : Xh10.ndof - 1);
+
+real div10 = sqrt(int2d(Th)((dx(u110) + dy(u210))^2));
+real errU10 = sqrt(int2d(ThRef)((u110 - u1Ref)^2 + (u210 - u2Ref)^2));
+real errP10 = sqrt(int2d(ThRef)((p10 - pRef)^2));
+
+cout << "P1/P0: mean(p) = " << int2d(Th)(p10)
+     << ", divL2 = " << div10
+     << ", errU = " << errU10
+     << ", errP = " << errP10 << endl;
+
+// P1b / P1
+fespace Xhb1(Th, [P1b, P1b, P1]);
+Xhb1 [u1b, u2b, pb], [v1b, v2b, qb];
+
+varf Stokesb([u1b, u2b, pb], [v1b, v2b, qb])
+    = int2d(Th)(
+          nu*(dx(u1b)*dx(v1b) + dy(u1b)*dy(v1b)
+             + dx(u2b)*dx(v2b) + dy(u2b)*dy(v2b))
+        - pb*(dx(v1b) + dy(v2b))
+        + qb*(dx(u1b) + dy(u2b))
+      )
+    - int2d(Th)(f1*v1b + f2*v2b)
+    + on(1, 2, 4, u1b = 0.0, u2b = 0.0)
+    + on(3, u1b = x^2, u2b = 0.0);
+
+varf Meanb([u1b, u2b, pb], [v1b, v2b, qb]) = int2d(Th)(qb);
+
+matrix Ab = Stokesb(Xhb1, Xhb1);
+real[int] bbv = Stokesb(0, Xhb1);
+real[int] Cb = Meanb(0, Xhb1);
+matrix AAb = [[Ab, Cb], [Cb', 0]];
+set(AAb, solver = sparsesolver);
+
+real[int] b0b(1), bbb(Xhb1.ndof + 1), solb(Xhb1.ndof + 1);
+b0b = 0.0;
+bbb = [bbv, b0b];
+solb = AAb^-1 * bbb;
+u1b[] = solb(0 : Xhb1.ndof - 1);
+
+real divb = sqrt(int2d(Th)((dx(u1b) + dy(u2b))^2));
+real errUb = sqrt(int2d(ThRef)((u1b - u1Ref)^2 + (u2b - u2Ref)^2));
+real errPb = sqrt(int2d(ThRef)((pb - pRef)^2));
+
+cout << "P1b/P1: mean(p) = " << int2d(Th)(pb)
+     << ", divL2 = " << divb
+     << ", errU = " << errUb
+     << ", errP = " << errPb << endl;

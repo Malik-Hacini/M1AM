@@ -1,0 +1,73 @@
+verbosity = 0;
+
+real nu = 1.0;
+real f1 = 0.0;
+real f2 = 0.0;
+
+int n = 32;
+
+mesh Th = square(n, n);
+plot(Th, cmm = "Unit square mesh", wait = true);
+
+fespace Xh(Th, [P2, P2, P1]);
+Xh [u1, u2, p], [v1, v2, q];
+
+varf Stokes([u1, u2, p], [v1, v2, q])
+    = int2d(Th)(
+          nu*(dx(u1)*dx(v1) + dy(u1)*dy(v1)
+             + dx(u2)*dx(v2) + dy(u2)*dy(v2))
+        - p*(dx(v1) + dy(v2))
+        + q*(dx(u1) + dy(u2))
+      )
+    - int2d(Th)(f1*v1 + f2*v2)
+    + on(1, 2, 4, u1 = 0.0, u2 = 0.0)
+    + on(3, u1 = 1.0, u2 = 0.0);
+
+varf MeanPressure([u1, u2, p], [v1, v2, q]) = int2d(Th)(q);
+
+matrix A = Stokes(Xh, Xh);
+real[int] rhs = Stokes(0, Xh);
+real[int] C = MeanPressure(0, Xh);
+
+matrix AA = [[A, C], [C', 0]];
+set(AA, solver = sparsesolver);
+
+real[int] rhs0(1), sol(Xh.ndof + 1), bb(Xh.ndof + 1);
+rhs0 = 0.0;
+bb = [rhs, rhs0];
+
+sol = AA^-1 * bb;
+u1[] = sol(0 : Xh.ndof - 1);
+
+plot([u1, u2], cmm = "Velocity field u", coef = 0.15, wait = true);
+
+fespace Vh(Th, P1);
+Vh psi, phi;
+Vh omega;
+
+omega = dx(u2) - dy(u1);
+
+varf aPsi(psi, phi) = int2d(Th)(dx(psi)*dx(phi) + dy(psi)*dy(phi));
+varf lPsi(psi, phi)
+    = int2d(Th)(omega*phi)
+    + int1d(Th, 1, 2, 3, 4)((-u2*N.x + u1*N.y)*phi);
+varf meanPsi(psi, phi) = int2d(Th)(phi);
+
+matrix APsi = aPsi(Vh, Vh);
+real[int] bPsi = lPsi(0, Vh);
+real[int] BPsi = meanPsi(0, Vh);
+
+matrix AAPsi = [[APsi, BPsi], [BPsi', 0]];
+set(AAPsi, solver = sparsesolver);
+
+real[int] b0Psi(1), xxPsi(Vh.ndof + 1), bbPsi(Vh.ndof + 1), l0(1);
+b0Psi = 0.0;
+bbPsi = [bPsi, b0Psi];
+
+xxPsi = AAPsi^-1 * bbPsi;
+[psi[], l0] = xxPsi;
+
+cout << "mean(psi) = " << int2d(Th)(psi) << endl;
+
+plot(omega, cmm = "Vorticity dx(u2) - dy(u1)", wait = true, value = true, fill = true);
+plot(psi, cmm = "Stream function psi", wait = true, value = true, fill = true, nbiso = 25);
