@@ -199,6 +199,150 @@ $$
 
 Thus the constraint is imposed during the solve itself.
 
+## 6.1. Why the term $\lambda \int_\Omega q$ appears
+
+The term
+
+$$
+\lambda \int_\Omega q \, dxdy
+$$
+
+is not arbitrary. It comes from applying the Lagrange multiplier method to the constraint
+
+$$
+\int_\Omega p \, dxdy = 0.
+$$
+
+Define the constraint functional
+
+$$
+G(p) = \int_\Omega p \, dxdy.
+$$
+
+We want to impose
+
+$$
+G(p) = 0.
+$$
+
+The Lagrange multiplier method says that we introduce a scalar multiplier $\lambda \in \mathbb{R}$ and add the term
+
+$$
+\lambda G(p)
+$$
+
+to the variational formulation. Here this term is
+
+$$
+\lambda \int_\Omega p \, dxdy.
+$$
+
+Now the unknowns are
+
+$$
+(u,p,\lambda),
+$$
+
+and the associated test functions are
+
+$$
+(v,q,\mu).
+$$
+
+We compute the variations of the added term
+
+$$
+\lambda \int_\Omega p \, dxdy.
+$$
+
+First, vary the pressure. Replace $p$ by $p + \varepsilon q$. Then
+
+$$
+\lambda \int_\Omega (p + \varepsilon q) \, dxdy
+=
+\lambda \int_\Omega p \, dxdy
++
+\varepsilon \lambda \int_\Omega q \, dxdy.
+$$
+
+Differentiating with respect to $\varepsilon$ at $\varepsilon = 0$ gives
+
+$$
+\lambda \int_\Omega q \, dxdy.
+$$
+
+This is exactly the term that appears in the pressure-test equation.
+
+Second, vary the multiplier. Replace $\lambda$ by $\lambda + \varepsilon \mu$. Then
+
+$$
+(\lambda + \varepsilon \mu) \int_\Omega p \, dxdy
+=
+\lambda \int_\Omega p \, dxdy
++
+\varepsilon \mu \int_\Omega p \, dxdy.
+$$
+
+Differentiating with respect to $\varepsilon$ at $\varepsilon = 0$ gives
+
+$$
+\mu \int_\Omega p \, dxdy.
+$$
+
+This is the constraint equation. Since the variational equality must hold for every $\mu \in \mathbb{R}$, it forces
+
+$$
+\int_\Omega p \, dxdy = 0.
+$$
+
+Thus the two terms
+
+$$
+\lambda \int_\Omega q \, dxdy
++
+\mu \int_\Omega p \, dxdy
+$$
+
+come from one single Lagrange multiplier term:
+
+$$
+\lambda \int_\Omega p \, dxdy.
+$$
+
+The first term is obtained by differentiating with respect to $p$, and the second one by differentiating with respect to $\lambda$.
+
+This also explains why we cannot choose an arbitrary term for $\lambda$. The multiplier must multiply the exact constraint functional. Since the constraint is
+
+$$
+G(p) = \int_\Omega p \, dxdy,
+$$
+
+the multiplier term must be
+
+$$
+\lambda G(p) = \lambda \int_\Omega p \, dxdy.
+$$
+
+If instead we had imposed another constraint, such as fixing the pressure at one point,
+
+$$
+p(x_0) = 0,
+$$
+
+then the constraint functional would have been
+
+$$
+G(p) = p(x_0),
+$$
+
+and the multiplier term would have been
+
+$$
+\lambda p(x_0).
+$$
+
+So the term $\lambda \int_\Omega q$ is determined uniquely by the zero-average pressure constraint.
+
 ## 7. Why this removes the singularity
 
 Without the extra equation, the pressure can be shifted by any constant.
