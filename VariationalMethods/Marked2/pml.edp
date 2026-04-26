@@ -1,0 +1,70 @@
+// i copied the code from wave.edp and added the phi unknowns and the new problem
+// did not have time to play with the thcikness and the damping function
+real L=10.0;
+real T=5.0;
+int Nt=100;
+real dt=T/Nt;
+real c=10.0;
+real a=3.0;
+
+int p=130;
+mesh Th=square(p,p,[-L-a+2.0*(L+a)*x,-L-a+2.0*(L+a)*y]);
+fespace Vh(Th,P1);
+
+Vh u, uold, unew, v;
+Vh sigmaX, sigmaY, sigma, sigmaXY;
+Vh phi1, phi2, phi1new, phi2new;
+
+problem wave(unew,v)
+    = int2d(Th)(unew*v/dt^2 + c/2.0*(dx(unew)*dx(v)+dy(unew)*dy(v))
+               + sigma*unew*v/(2.0*dt) + sigmaXY*unew*v/2.0)
+    - int2d(Th)((2.0*u-uold)*v/dt^2 - c/2.0*(dx(uold)*dx(v)+dy(uold)*dy(v))
+               + sigma*uold*v/(2.0*dt) - sigmaXY*uold*v/2.0
+               - phi1new*dx(v) - phi2new*dy(v))
+    + on(1,2,3,4,unew=0.0);
+
+func real u0(){
+    real r=sqrt((x+L/2.0)^2+(y+L/2.0)^2);
+    if (r<1.0) return 1.0-r;
+    return 0.0;
+}
+
+func real sigmaXf(){
+    if (abs(x)<=L) return 0.0;
+    return 20.0*((abs(x)-L)/a)^2;
+}
+
+func real sigmaYf(){
+    if (abs(y)<=L) return 0.0;
+    return 20.0*((abs(y)-L)/a)^2;
+}
+
+sigmaX=sigmaXf();
+sigmaY=sigmaYf();
+sigma=sigmaX+sigmaY;
+sigmaXY=sigmaX*sigmaY;
+
+uold=u0();
+u=uold;
+phi1=0.0;
+phi2=0.0;
+
+real[int] isovec(21);
+real isomin=-0.25, isomax=0.15;
+for (int i=0;i<isovec.n;i++)
+    isovec[i]=isomin+(isomax-isomin)*i/(isovec.n-1);
+
+plot(sigma,dim=2,fill=true,value=true);
+plot(u,dim=2,fill=true,value=true,viso=isovec);
+
+for (int n=0;n<=Nt-2;n++){
+    phi1new=(phi1+dt*c*(sigmaY-sigmaX)*dx(u))/(1.0+dt*sigmaX);
+    phi2new=(phi2-dt*c*(sigmaY-sigmaX)*dy(u))/(1.0+dt*sigmaY);
+    wave;
+    real t=(n+2)*dt;
+    plot(unew,dim=2,fill=true,value=true,viso=isovec,cmm="t = " + t);
+    phi1=phi1new;
+    phi2=phi2new;
+    uold=u;
+    u=unew;
+}

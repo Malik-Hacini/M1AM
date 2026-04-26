@@ -1,5 +1,3 @@
-verbosity=0;
-
 real L=10.0;
 real T=5.0;
 int Nt=100;
