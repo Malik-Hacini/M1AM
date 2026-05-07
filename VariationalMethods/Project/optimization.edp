@@ -1,0 +1,149 @@
+verbosity = 0;
+
+real Tc = 343.0;
+real Te = 293.0;
+real h = 1.0;
+real Ts = 400.0;
+real rC = 0.05;
+
+int bottom = 1;
+int top = 3;
+int nSources = 6;
+int nx = 120;
+int ny = 80;
+bool showPlots = false;
+
+mesh Th = square(nx, ny, [3.0*x - 1.5, 2.0*y - 1.0]);
+fespace Vh(Th, P1);
+
+func inS = ((abs(x) < 0.75) && (abs(y) < 0.5)) ? 1.0 : 0.0;
+func kappa = inS ? 1.0 : 10.0;
+
+real[int] cx(nSources), cy(nSources);
+cx = [-1.0, 0.0, 1.0, -1.0, 0.0, 1.0];
+cy = [-0.75, -0.75, -0.75, 0.75, 0.75, 0.75];
+
+Vh T, v, T0, Topt, Tlin, errPlot, sourceH, sourceAdd;
+Vh[int] Ti(nSources);
+
+problem oven0(T, v)
+    = int2d(Th)(kappa*(dx(T)*dx(v) + dy(T)*dy(v)))
+    + int1d(Th, bottom)(kappa*h*T*v)
+    - int1d(Th, bottom)(kappa*h*Te*v)
+    + on(top, T = Tc);
+
+problem ovenSource(T, v)
+    = int2d(Th)(kappa*(dx(T)*dx(v) + dy(T)*dy(v)))
+    + int1d(Th, bottom)(kappa*h*T*v)
+    - int2d(Th)(sourceH*v)
+    + on(top, T = 0.0);
+
+problem ovenDirect(T, v)
+    = int2d(Th)(kappa*(dx(T)*dx(v) + dy(T)*dy(v)))
+    + int1d(Th, bottom)(kappa*h*T*v)
+    - int2d(Th)(sourceH*v)
+    - int1d(Th, bottom)(kappa*h*Te*v)
+    + on(top, T = Tc);
+
+oven0;
+T0 = T;
+
+for (int i = 0; i < nSources; ++i) {
+    real xi = cx[i];
+    real yi = cy[i];
+    sourceH = (((x - xi)^2 + (y - yi)^2) < rC^2) ? 1.0 : 0.0;
+    ovenSource;
+    Ti[i] = T;
+}
+
+real[int,int] A(nSources, nSources);
+real[int] b(nSources), alpha(nSources);
+
+for (int i = 0; i < nSources; ++i) {
+    b[i] = int2d(Th)(inS*(Ts - T0)*Ti[i]);
+    for (int j = 0; j < nSources; ++j) {
+        A(i,j) = int2d(Th)(inS*Ti[i]*Ti[j]);
+    }
+}
+
+// Gauss-Jordan solve of the 6 x 6 normal system A alpha = b.
+for (int k = 0; k < nSources; ++k) {
+    int pivotRow = k;
+    real pivotAbs = abs(A(k,k));
+    for (int i = k + 1; i < nSources; ++i) {
+        if (abs(A(i,k)) > pivotAbs) {
+            pivotRow = i;
+            pivotAbs = abs(A(i,k));
+        }
+    }
+
+    if (pivotRow != k) {
+        for (int j = 0; j < nSources; ++j) {
+            real tmp = A(k,j);
+            A(k,j) = A(pivotRow,j);
+            A(pivotRow,j) = tmp;
+        }
+        real tmpb = b[k];
+        b[k] = b[pivotRow];
+        b[pivotRow] = tmpb;
+    }
+
+    real pivot = A(k,k);
+    for (int j = k; j < nSources; ++j) {
+        A(k,j) = A(k,j) / pivot;
+    }
+    b[k] = b[k] / pivot;
+
+    for (int i = 0; i < nSources; ++i) {
+        if (i != k) {
+            real factor = A(i,k);
+            for (int j = k; j < nSources; ++j) {
+                A(i,j) = A(i,j) - factor*A(k,j);
+            }
+            b[i] = b[i] - factor*b[k];
+        }
+    }
+}
+
+alpha = b;
+
+cout << "Optimal coefficients:" << endl;
+for (int i = 0; i < nSources; ++i) {
+    cout << "alpha[" << i + 1 << "] = " << alpha[i] << endl;
+}
+
+sourceH = 0.0;
+for (int i = 0; i < nSources; ++i) {
+    real xi = cx[i];
+    real yi = cy[i];
+    sourceAdd = (((x - xi)^2 + (y - yi)^2) < rC^2) ? 1.0 : 0.0;
+    sourceH = sourceH + alpha[i]*sourceAdd;
+}
+
+ovenDirect;
+Topt = T;
+
+Tlin = T0;
+for (int i = 0; i < nSources; ++i) {
+    Tlin = Tlin + alpha[i]*Ti[i];
+}
+
+real areaS = int2d(Th)(inS);
+real meanS = int2d(Th)(inS*Topt) / areaS;
+real objective = 0.5*int2d(Th)(inS*(Topt - Ts)^2);
+real rmsTargetError = sqrt(2.0*objective / areaS);
+real standardDeviation = sqrt(int2d(Th)(inS*(Topt - meanS)^2) / areaS);
+real linearityCheck = sqrt(int2d(Th)((Topt - Tlin)^2));
+
+cout << "area(S) = " << areaS << endl;
+cout << "mean temperature on S = " << meanS << endl;
+cout << "J(alpha) = " << objective << endl;
+cout << "RMS error to Ts on S = " << rmsTargetError << endl;
+cout << "standard deviation on S = " << standardDeviation << endl;
+cout << "direct/linear decomposition L2 difference = " << linearityCheck << endl;
+
+if (showPlots) {
+    errPlot = Topt - Ts;
+    plot(Topt, cmm = "Optimal direct temperature", wait = true, value = true, fill = true);
+    plot(errPlot, cmm = "Topt - Ts", wait = true, value = true, fill = true);
+}
