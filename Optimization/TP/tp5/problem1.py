@@ -42,7 +42,6 @@ L = 0.25*max(np.linalg.norm(A,2,axis=1))**2 + lam
 # ### Related to function $f$
 
 
-
 def f(x):
     l = 0.0
     for i in range(A.shape[0]):
@@ -63,8 +62,8 @@ def grad_f(x):
 
 
 
-
 def grad_f_subsampling(x):
+<<<<<<< Updated upstream
 <<<<<<< HEAD
     g = np.zeros(n)
     i = np.random.randint(0,A.shape[0])
@@ -80,6 +79,8 @@ def grad_f_subsampling(x):
     # TO BE COMPLETED
 >>>>>>> 789dfcf (add opti tp)
 
+=======
+>>>>>>> Stashed changes
 
 
 # ## Prediction Function
@@ -134,8 +135,12 @@ def prediction_test(w,PRINT):
                 correct = "False"
             if PRINT:
                 print("True class: {:d} \t-- Predicted: {} \t(confidence: {:.1f}%)\t{}".format(int(b[i]),-1,100-(0.5-p)*200,correct))
+<<<<<<< Updated upstream
 <<<<<<< HEAD
     return pred,float(perf)/A_test.shape[0]
 =======
     return pred,float(perf)/A_test.shape[0]
 >>>>>>> 789dfcf (add opti tp)
+=======
+    return pred,float(perf)/A_test.shape[0]
+>>>>>>> Stashed changes
